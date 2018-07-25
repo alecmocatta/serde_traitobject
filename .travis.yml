@@ -14,7 +14,7 @@ env:
   global:
     - FMT_VERSION=nightly-2018-07-17
     - CLIPPY_VERSION=nightly-2018-07-17
-    - DOCS_RS_VERSION=nightly-2018-07-07 # https://docs.rs/about
+    - DOCS_RS_VERSION=nightly-2018-07-17 # should be nightly-2018-06-03 https://github.com/onur/docs.rs/blob/32102ce458b34f750ef190182116d9583491a64b/Vagrantfile#L50
 
 matrix:
   include:

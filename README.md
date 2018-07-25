@@ -6,7 +6,7 @@
 [![Build Status](https://circleci.com/gh/alecmocatta/serde_traitobject/tree/master.svg?style=shield)](https://circleci.com/gh/alecmocatta/serde_traitobject)
 [![Build Status](https://travis-ci.com/alecmocatta/serde_traitobject.svg?branch=master)](https://travis-ci.com/alecmocatta/serde_traitobject)
 
-[Docs](https://docs.rs/serde_traitobject/0.1.0)
+[Docs](https://docs.rs/crate/serde_traitobject)
 
 Serializable trait objects.
 
