@@ -75,7 +75,7 @@ println!("{:?}", downcast);
 
 ## Note
 
-This crate works by wrapping the vtable pointer with [relative::Pointer](https://docs.rs/relative) such that it can safely be sent between processes.
+This crate works by wrapping the vtable pointer with [relative::Vtable](https://docs.rs/relative) such that it can safely be sent between processes.
 
 This currently requires Rust nightly.
 

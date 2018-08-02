@@ -74,7 +74,7 @@
 //!
 //! # Note
 //!
-//! This crate works by wrapping the vtable pointer with [relative::Pointer](https://docs.rs/relative) such that it can safely be sent between processes.
+//! This crate works by wrapping the vtable pointer with [relative::Vtable](https://docs.rs/relative) such that it can safely be sent between processes.
 //!
 //! This currently requires Rust nightly.
 
@@ -109,7 +109,7 @@ extern crate serde;
 
 mod convenience;
 
-use relative::{Data, Pointer};
+use relative::Vtable;
 use serde::ser::SerializeTuple;
 use std::{boxed, fmt, intrinsics, marker, mem, ptr};
 
@@ -355,7 +355,7 @@ mod deserialize {
 }
 
 /// Using a struct + trait to leverage specialisation to respectively handle concrete, slices and traitobjects.
-struct Serializer<T: Serialize + ?Sized>(marker::PhantomData<fn(T)>);
+struct Serializer<T: Serialize + ?Sized + 'static>(marker::PhantomData<fn(T)>);
 trait SerializerTrait<T: Serialize + ?Sized> {
 	fn serialize<S>(t: &T, serializer: S) -> Result<S::Ok, S::Error>
 	where
@@ -388,7 +388,7 @@ impl<T: serde::ser::Serialize> SerializerTrait<[T]> for Serializer<[T]> {
 		serde::ser::Serialize::serialize(t, serializer)
 	}
 }
-impl<T: Serialize + ?Sized> SerializerTrait<T> for Serializer<T> {
+impl<T: Serialize + ?Sized + 'static> SerializerTrait<T> for Serializer<T> {
 	#[inline]
 	default fn serialize<S>(t: &T, serializer: S) -> Result<S::Ok, S::Error>
 	where
@@ -401,11 +401,8 @@ impl<T: Serialize + ?Sized> SerializerTrait<T> for Serializer<T> {
 		} else {
 			panic!()
 		};
-		let mut tup = serializer.serialize_tuple(3)?;
-		tup.serialize_element::<Pointer<Data>>(&unsafe {
-			Pointer::<Data>::from(&*(vtable as *const () as *const Data))
-		})?;
-		tup.serialize_element::<u64>(&type_id::<T>())?;
+		let mut tup = serializer.serialize_tuple(2)?;
+		tup.serialize_element::<Vtable<T>>(&unsafe { Vtable::<T>::from(vtable) })?;
 		tup.serialize_element::<SerializeErased<T>>(&SerializeErased(t))?;
 		tup.end()
 	}
@@ -422,7 +419,7 @@ impl<'a, T: Serialize + ?Sized> serde::ser::Serialize for SerializeErased<'a, T>
 }
 
 /// Using a struct + trait to leverage specialisation to respectively handle concrete, slices and traitobjects.
-struct Deserializer<T: Deserialize + ?Sized>(marker::PhantomData<T>);
+struct Deserializer<T: Deserialize + ?Sized + 'static>(marker::PhantomData<T>);
 trait DeserializerTrait<T: Deserialize + ?Sized> {
 	fn deserialize<'de, D>(deserializer: D) -> Result<boxed::Box<T>, D::Error>
 	where
@@ -455,14 +452,14 @@ impl<T: serde::de::DeserializeOwned> DeserializerTrait<[T]> for Deserializer<[T]
 		serde::de::Deserialize::deserialize(deserializer)
 	}
 }
-impl<T: Deserialize + ?Sized> DeserializerTrait<T> for Deserializer<T> {
+impl<T: Deserialize + ?Sized + 'static> DeserializerTrait<T> for Deserializer<T> {
 	#[inline]
 	default fn deserialize<'de, D>(deserializer: D) -> Result<boxed::Box<T>, D::Error>
 	where
 		D: serde::Deserializer<'de>,
 	{
 		struct Visitor<T: Deserialize + ?Sized>(marker::PhantomData<T>);
-		impl<'de, T: Deserialize + ?Sized> serde::de::Visitor<'de> for Visitor<T> {
+		impl<'de, T: Deserialize + ?Sized + 'static> serde::de::Visitor<'de> for Visitor<T> {
 			type Value = boxed::Box<T>;
 			fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
 				write!(formatter, "a {} trait object", unsafe {
@@ -474,37 +471,23 @@ impl<T: Deserialize + ?Sized> DeserializerTrait<T> for Deserializer<T> {
 			where
 				A: serde::de::SeqAccess<'de>,
 			{
-				let t0: Pointer<Data> = match seq.next_element()? {
+				let t0: Vtable<T> = match seq.next_element()? {
 					Some(value) => value,
 					None => return Err(serde::de::Error::invalid_length(0, &self)),
 				};
-				let t1: u64 = match seq.next_element()? {
+				let object: boxed::Box<T> = unsafe {
+					metatype::Type::uninitialized_box(mem::transmute_copy(&metatype::TraitObject {
+						vtable: t0.to(),
+					})) // https://github.com/rust-lang/rust/issues/50318
+				};
+				let t1: boxed::Box<T> = match seq.next_element_seed(DeserializeErased(object))? {
 					Some(value) => value,
 					None => return Err(serde::de::Error::invalid_length(1, &self)),
 				};
-				if t1 != type_id::<T>() {
-					return Err(serde::de::Error::invalid_type(
-						serde::de::Unexpected::Other(&format!("???:{}", t1)),
-						&&*format!(
-							"{}:{}",
-							unsafe { intrinsics::type_name::<T>() },
-							type_id::<T>()
-						),
-					));
-				}
-				let object: boxed::Box<T> = unsafe {
-					metatype::Type::uninitialized_box(mem::transmute_copy(&metatype::TraitObject {
-						vtable: &*(t0.to() as *const Data as *const ()),
-					})) // https://github.com/rust-lang/rust/issues/50318
-				};
-				let t2: boxed::Box<T> = match seq.next_element_seed(DeserializeErased(object))? {
-					Some(value) => value,
-					None => return Err(serde::de::Error::invalid_length(2, &self)),
-				};
-				Ok(t2)
+				Ok(t1)
 			}
 		}
-		deserializer.deserialize_tuple(3, Visitor(marker::PhantomData))
+		deserializer.deserialize_tuple(2, Visitor(marker::PhantomData))
 	}
 }
 struct DeserializeErased<T: Deserialize + ?Sized>(boxed::Box<T>);
@@ -519,7 +502,7 @@ impl<'de, T: Deserialize + ?Sized> serde::de::DeserializeSeed<'de> for Deseriali
 		unsafe {
 			(&mut *x).deserialize_erased(&mut erased_serde::Deserializer::erase(deserializer))
 		}.map(|()| x)
-			.map_err(serde::de::Error::custom)
+		.map_err(serde::de::Error::custom)
 	}
 }
 
@@ -554,7 +537,7 @@ impl<'de, T: Deserialize + ?Sized> serde::de::DeserializeSeed<'de> for Deseriali
 /// }
 /// # }
 /// ```
-pub fn serialize<T: Serialize + ?Sized, B: AsRef<T> + ?Sized, S>(
+pub fn serialize<T: Serialize + ?Sized + 'static, B: AsRef<T> + ?Sized, S>(
 	t: &B, serializer: S,
 ) -> Result<S::Ok, S::Error>
 where
@@ -594,58 +577,12 @@ where
 /// }
 /// # }
 /// ```
-pub fn deserialize<'de, T: Deserialize + ?Sized, B, D>(deserializer: D) -> Result<B, D::Error>
+pub fn deserialize<'de, T: Deserialize + ?Sized + 'static, B, D>(
+	deserializer: D,
+) -> Result<B, D::Error>
 where
 	D: serde::Deserializer<'de>,
 	boxed::Box<T>: Into<B>,
 {
 	Deserializer::<T>::deserialize(deserializer).map(<boxed::Box<T> as Into<B>>::into)
-}
-
-/// Like intrinsics::type_id::<T>() but without the `'static` constraint.
-/// Tracking issue for non_static_type_id: https://github.com/rust-lang/rust/issues/41875
-/// Using the type_name is an (unfortunately probabilistic) hack around msvc/gold identical COMDAT/code folding
-#[inline(never)]
-fn type_id<T: ?Sized>() -> u64 {
-	#[allow(const_err)]
-	{
-		let x: fn() -> u64 = type_id::<T>;
-		let x = x as *const () as usize;
-		let x_base: fn() -> u64 = type_id::<()>;
-		let x_base = x_base as *const () as usize;
-		let z = unsafe { intrinsics::type_name::<T>() }.as_ptr() as usize;
-		let z_base = unsafe { intrinsics::type_name::<()>() }.as_ptr() as usize;
-		x.wrapping_sub(x_base).wrapping_add(z.wrapping_sub(z_base)) as u64
-	}
-}
-
-#[cfg(test)]
-#[test]
-fn type_id_test() {
-	assert_eq!(type_id::<()>(), type_id::<()>());
-	assert_eq!(type_id::<&str>(), type_id::<&'static str>());
-	assert_eq!(type_id::<u8>(), type_id::<u8>());
-	assert_eq!(type_id::<usize>(), type_id::<usize>());
-	assert_eq!(type_id::<String>(), type_id::<String>());
-	assert_eq!(
-		type_id::<fn(String) -> String>(),
-		type_id::<fn(String) -> String>()
-	);
-
-	assert_ne!(type_id::<()>(), type_id::<((),)>());
-	assert_ne!(type_id::<()>(), type_id::<u8>());
-	assert_ne!(type_id::<i8>(), type_id::<u8>());
-	assert_ne!(type_id::<isize>(), type_id::<usize>());
-	assert_ne!(type_id::<isize>(), type_id::<&isize>());
-	assert_ne!(type_id::<&isize>(), type_id::<&&isize>());
-	assert_ne!(type_id::<&isize>(), type_id::<&usize>());
-	assert_ne!(type_id::<&mut isize>(), type_id::<&isize>());
-	assert_ne!(
-		type_id::<fn(Vec<u8>) -> String>(),
-		type_id::<fn(String) -> String>()
-	);
-	assert_ne!(
-		type_id::<fn(String) -> Vec<u8>>(),
-		type_id::<fn(String) -> String>()
-	);
 }

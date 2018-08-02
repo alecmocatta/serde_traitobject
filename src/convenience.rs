@@ -108,7 +108,7 @@ impl<'a, A, R> ops::FnOnce<A> for Box<dyn FnBox<A, Output = R> + Send + 'a> {
 		self.0.call_box(args)
 	}
 }
-impl<T: Serialize + Deserialize + ?Sized> serde::ser::Serialize for Box<T> {
+impl<T: Serialize + Deserialize + ?Sized + 'static> serde::ser::Serialize for Box<T> {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
@@ -116,7 +116,7 @@ impl<T: Serialize + Deserialize + ?Sized> serde::ser::Serialize for Box<T> {
 		serialize(&self.0, serializer)
 	}
 }
-impl<'de, T: Serialize + Deserialize + ?Sized> serde::de::Deserialize<'de> for Box<T> {
+impl<'de, T: Serialize + Deserialize + ?Sized + 'static> serde::de::Deserialize<'de> for Box<T> {
 	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
 	where
 		D: serde::Deserializer<'de>,
@@ -200,7 +200,7 @@ impl<T: Serialize + Deserialize + fmt::Display + ?Sized> fmt::Display for Rc<T> 
 		self.0.fmt(f)
 	}
 }
-impl<T: Serialize + Deserialize + ?Sized> serde::ser::Serialize for Rc<T> {
+impl<T: Serialize + Deserialize + ?Sized + 'static> serde::ser::Serialize for Rc<T> {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
@@ -208,7 +208,7 @@ impl<T: Serialize + Deserialize + ?Sized> serde::ser::Serialize for Rc<T> {
 		serialize(&self.0, serializer)
 	}
 }
-impl<'de, T: Serialize + Deserialize + ?Sized> serde::de::Deserialize<'de> for Rc<T> {
+impl<'de, T: Serialize + Deserialize + ?Sized + 'static> serde::de::Deserialize<'de> for Rc<T> {
 	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
 	where
 		D: serde::Deserializer<'de>,
@@ -292,7 +292,7 @@ impl<T: Serialize + Deserialize + fmt::Display + ?Sized> fmt::Display for Arc<T>
 		self.0.fmt(f)
 	}
 }
-impl<T: Serialize + Deserialize + ?Sized> serde::ser::Serialize for Arc<T> {
+impl<T: Serialize + Deserialize + ?Sized + 'static> serde::ser::Serialize for Arc<T> {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
@@ -300,7 +300,7 @@ impl<T: Serialize + Deserialize + ?Sized> serde::ser::Serialize for Arc<T> {
 		serialize(&self.0, serializer)
 	}
 }
-impl<'de, T: Serialize + Deserialize + ?Sized> serde::de::Deserialize<'de> for Arc<T> {
+impl<'de, T: Serialize + Deserialize + ?Sized + 'static> serde::de::Deserialize<'de> for Arc<T> {
 	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
 	where
 		D: serde::Deserializer<'de>,

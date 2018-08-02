@@ -84,16 +84,16 @@ fn main() {
 		assert_eq!(g(22), "hey 123!");
 		assert_eq!(
 			***Box::<any::Any>::downcast::<serde_traitobject::Box<usize>>(h.into_any()).unwrap(),
-			987654321
+			987_654_321
 		);
 		assert_eq!(
 			*Box::<any::Any>::downcast::<usize>(
 				Box::<any::Any>::downcast::<serde_traitobject::Box<serde_traitobject::Any>>(
 					i.into_any()
 				).unwrap()
-					.into_any()
+				.into_any()
 			).unwrap(),
-			987654321
+			987_654_321
 		);
 		assert_eq!(**j, "abc");
 		assert_eq!(*k, "def");
@@ -109,9 +109,9 @@ fn main() {
 		let a: Box<any::Any> = *a;
 		let _: Box<usize> = Box::<any::Any>::downcast(a).unwrap();
 
-		let a: serde_traitobject::Box<serde_traitobject::Any> = serde_traitobject::Box::new(
-			serde_traitobject::Box::new(1usize) as serde_traitobject::Box<serde_traitobject::Any>,
-		);
+		let a: serde_traitobject::Box<serde_traitobject::Any> =
+			serde_traitobject::Box::new(serde_traitobject::Box::new(1usize)
+				as serde_traitobject::Box<serde_traitobject::Any>);
 		let a: Box<any::Any> = a.into_any();
 		let a: Box<serde_traitobject::Box<serde_traitobject::Any>> =
 			Box::<any::Any>::downcast(a).unwrap();
@@ -127,8 +127,8 @@ fn main() {
 			e: Box::new(78u8),
 			f: serde_traitobject::Box::new(78u8),
 			g: serde_traitobject::Box::new(Fn!(|a: usize| format!("hey {}!", a + 101))),
-			h: serde_traitobject::Box::new(serde_traitobject::Box::new(987654321usize)),
-			i: serde_traitobject::Box::new(serde_traitobject::Box::new(987654321usize)
+			h: serde_traitobject::Box::new(serde_traitobject::Box::new(987_654_321usize)),
+			i: serde_traitobject::Box::new(serde_traitobject::Box::new(987_654_321usize)
 				as serde_traitobject::Box<serde_traitobject::Any>),
 			j: serde_traitobject::Box::new(String::from("abc")),
 			k: Box::new(String::from("def")),
@@ -170,8 +170,8 @@ fn main() {
 		e: Box::new(78u8),
 		f: serde_traitobject::Box::new(78u8),
 		g: serde_traitobject::Box::new(Fn!(|a: usize| format!("hey {}!", a + 101))),
-		h: serde_traitobject::Box::new(serde_traitobject::Box::new(987654321usize)),
-		i: serde_traitobject::Box::new(serde_traitobject::Box::new(987654321usize)
+		h: serde_traitobject::Box::new(serde_traitobject::Box::new(987_654_321usize)),
+		i: serde_traitobject::Box::new(serde_traitobject::Box::new(987_654_321usize)
 			as serde_traitobject::Box<serde_traitobject::Any>),
 		j: serde_traitobject::Box::new(String::from("abc")),
 		k: Box::new(String::from("def")),
@@ -202,8 +202,7 @@ fn main() {
 				"SERDE_TRAITOBJECT_SPAWNED",
 				serde_json::to_string(&(&original, bincode::serialize(&original).unwrap()))
 					.unwrap(),
-			)
-			.output()
+			).output()
 			.unwrap();
 		if !output.status.success() {
 			panic!("{}: {:?}", i, output);
