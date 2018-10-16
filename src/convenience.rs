@@ -25,6 +25,24 @@ impl Box<Any> {
 		self.0.into_any()
 	}
 }
+impl Box<Any + Send> {
+	/// Convert into a `std::boxed::Box<dyn std::any::Any + Send>`.
+	pub fn into_any_send(self) -> boxed::Box<any::Any + Send> {
+		self.0.into_any_send()
+	}
+}
+impl Box<Any + Sync> {
+	/// Convert into a `std::boxed::Box<dyn std::any::Any + Sync>`.
+	pub fn into_any_sync(self) -> boxed::Box<any::Any + Sync> {
+		self.0.into_any_sync()
+	}
+}
+impl Box<Any + Send + Sync> {
+	/// Convert into a `std::boxed::Box<dyn std::any::Any + Send + Sync>`.
+	pub fn into_any_send_sync(self) -> boxed::Box<any::Any + Send + Sync> {
+		self.0.into_any_send_sync()
+	}
+}
 impl<
 		T: Serialize + Deserialize + ?Sized + marker::Unsize<U>,
 		U: Serialize + Deserialize + ?Sized,
@@ -336,8 +354,20 @@ pub trait Any: Serialize + Deserialize + any::Any {
 	fn as_any(&self) -> &any::Any;
 	/// Convert to a `&mut std::any::Any`.
 	fn as_any_mut(&mut self) -> &mut any::Any;
-	/// Convert to a `std::boxed::Box<std::any::Any>`.
+	/// Convert to a `std::boxed::Box<dyn std::any::Any>`.
 	fn into_any(self: boxed::Box<Self>) -> boxed::Box<any::Any>;
+	/// Convert to a `std::boxed::Box<dyn std::any::Any + Send>`.
+	fn into_any_send(self: boxed::Box<Self>) -> boxed::Box<any::Any + Send>
+	where
+		Self: Send;
+	/// Convert to a `std::boxed::Box<dyn std::any::Any + Sync>`.
+	fn into_any_sync(self: boxed::Box<Self>) -> boxed::Box<any::Any + Sync>
+	where
+		Self: Sync;
+	/// Convert to a `std::boxed::Box<dyn std::any::Any + Send + Sync>`.
+	fn into_any_send_sync(self: boxed::Box<Self>) -> boxed::Box<any::Any + Send + Sync>
+	where
+		Self: Send + Sync;
 }
 impl<T: Serialize + Deserialize + any::Any> Any for T {
 	fn as_any(&self) -> &any::Any {
@@ -347,6 +377,24 @@ impl<T: Serialize + Deserialize + any::Any> Any for T {
 		self
 	}
 	fn into_any(self: boxed::Box<Self>) -> boxed::Box<any::Any> {
+		self
+	}
+	fn into_any_send(self: boxed::Box<Self>) -> boxed::Box<any::Any + Send>
+	where
+		Self: Send,
+	{
+		self
+	}
+	fn into_any_sync(self: boxed::Box<Self>) -> boxed::Box<any::Any + Sync>
+	where
+		Self: Sync,
+	{
+		self
+	}
+	fn into_any_send_sync(self: boxed::Box<Self>) -> boxed::Box<any::Any + Send + Sync>
+	where
+		Self: Send + Sync,
+	{
 		self
 	}
 }
