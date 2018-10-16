@@ -87,7 +87,7 @@
 	unsize,
 	specialization,
 	trivial_bounds,
-	fnbox,
+	fnbox
 )]
 #![warn(
 	missing_copy_implementations,
@@ -98,9 +98,13 @@
 	unused_import_braces,
 	unused_qualifications,
 	unused_results,
+	clippy::pedantic
 )] // from https://github.com/rust-unofficial/patterns/blob/master/anti_patterns/deny-warnings.md
-#![cfg_attr(feature = "cargo-clippy", warn(clippy_pedantic))]
-#![cfg_attr(feature = "cargo-clippy", allow(inline_always, doc_markdown))]
+#![allow(
+	where_clauses_object_safety,
+	clippy::inline_always,
+	clippy::doc_markdown
+)]
 
 extern crate erased_serde;
 extern crate metatype;
@@ -501,7 +505,8 @@ impl<'de, T: Deserialize + ?Sized> serde::de::DeserializeSeed<'de> for Deseriali
 		let mut x = self.0;
 		unsafe {
 			(&mut *x).deserialize_erased(&mut erased_serde::Deserializer::erase(deserializer))
-		}.map(|()| x)
+		}
+		.map(|()| x)
 		.map_err(serde::de::Error::custom)
 	}
 }

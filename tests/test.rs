@@ -1,4 +1,21 @@
 #![feature(unboxed_closures)]
+#![warn(
+	missing_copy_implementations,
+	missing_debug_implementations,
+	// missing_docs,
+	trivial_numeric_casts,
+	unused_extern_crates,
+	unused_import_braces,
+	unused_qualifications,
+	unused_results,
+	clippy::pedantic
+)] // from https://github.com/rust-unofficial/patterns/blob/master/anti_patterns/deny-warnings.md
+#![allow(
+	where_clauses_object_safety,
+	clippy::inline_always,
+	clippy::doc_markdown,
+	clippy::unseparated_literal_suffix
+)]
 
 #[macro_use]
 extern crate serde_derive;
@@ -90,9 +107,11 @@ fn main() {
 			*Box::<any::Any>::downcast::<usize>(
 				Box::<any::Any>::downcast::<serde_traitobject::Box<serde_traitobject::Any>>(
 					i.into_any()
-				).unwrap()
+				)
+				.unwrap()
 				.into_any()
-			).unwrap(),
+			)
+			.unwrap(),
 			987_654_321
 		);
 		assert_eq!(**j, "abc");
@@ -146,7 +165,8 @@ fn main() {
 		let a1 = serde_json::to_string(
 			&(serde_traitobject::Box::new(78u8)
 				as serde_traitobject::Box<serde_traitobject::Debug>),
-		).unwrap();
+		)
+		.unwrap();
 		let a1r: Result<serde_traitobject::Box<serde_traitobject::Debug>, _> =
 			serde_json::from_str(&a1);
 		assert!(a1r.is_ok());
@@ -156,7 +176,8 @@ fn main() {
 		let a1 = bincode::serialize(
 			&(serde_traitobject::Box::new(78u8)
 				as serde_traitobject::Box<serde_traitobject::Debug>),
-		).unwrap();
+		)
+		.unwrap();
 		let a1: Result<serde_traitobject::Box<serde_traitobject::Any>, _> =
 			bincode::deserialize(&a1);
 		assert!(a1.is_err());
@@ -202,7 +223,8 @@ fn main() {
 				"SERDE_TRAITOBJECT_SPAWNED",
 				serde_json::to_string(&(&original, bincode::serialize(&original).unwrap()))
 					.unwrap(),
-			).output()
+			)
+			.output()
 			.unwrap();
 		if !output.status.success() {
 			panic!("{}: {:?}", i, output);
