@@ -78,7 +78,7 @@
 //!
 //! This currently requires Rust nightly.
 
-#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.1.1")]
+#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.1.2")]
 #![feature(
 	unboxed_closures,
 	fn_traits,

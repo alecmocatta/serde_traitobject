@@ -14,7 +14,7 @@ This library enables the serialization of trait objects such that they can be se
 
 For example, if you have multiple forks of a process, or the same binary running on each of a cluster of machines, this library would help you to send trait objects between them.
 
-The heart of this crate is the [Serialize](https://docs.rs/serde_traitobject/0.1.1/serde_traitobject/trait.Serialize.html) and [Deserialize](https://docs.rs/serde_traitobject/0.1.1/serde_traitobject/trait.Deserialize.html) traits. They are automatically implemented for all `T: serde::Serialize` and all `T: serde::de::DeserializeOwned` respectively.
+The heart of this crate is the [Serialize](https://docs.rs/serde_traitobject/0.1.2/serde_traitobject/trait.Serialize.html) and [Deserialize](https://docs.rs/serde_traitobject/0.1.2/serde_traitobject/trait.Deserialize.html) traits. They are automatically implemented for all `T: serde::Serialize` and all `T: serde::de::DeserializeOwned` respectively.
 
 Any trait can be made (de)serializable when made into a trait object by simply adding them as supertraits:
 
@@ -34,12 +34,12 @@ struct Message(#[serde(with = "serde_traitobject")] Box<dyn MyTrait>);
 ```
 
 There are two ways to use serde_traitobject to handle the (de)serialization:
- * `#[serde(with = "serde_traitobject")]` [field attribute](https://serde.rs/attributes.html) on a boxed trait object, which instructs serde to use the [serialize](https://docs.rs/serde_traitobject/0.1.1/serde_traitobject/fn.serialize.html) and [deserialize](https://docs.rs/serde_traitobject/0.1.1/serde_traitobject/fn.deserialize.html) functions;
- * The [Box](https://docs.rs/serde_traitobject/0.1.1/serde_traitobject/struct.Box.html), [Rc](https://docs.rs/serde_traitobject/0.1.1/serde_traitobject/struct.Rc.html) and [Arc](https://docs.rs/serde_traitobject/0.1.1/serde_traitobject/struct.Arc.html) structs, which are simple wrappers around their stdlib counterparts that automatically handle (de)serialization without needing the above annotation;
+ * `#[serde(with = "serde_traitobject")]` [field attribute](https://serde.rs/attributes.html) on a boxed trait object, which instructs serde to use the [serialize](https://docs.rs/serde_traitobject/0.1.2/serde_traitobject/fn.serialize.html) and [deserialize](https://docs.rs/serde_traitobject/0.1.2/serde_traitobject/fn.deserialize.html) functions;
+ * The [Box](https://docs.rs/serde_traitobject/0.1.2/serde_traitobject/struct.Box.html), [Rc](https://docs.rs/serde_traitobject/0.1.2/serde_traitobject/struct.Rc.html) and [Arc](https://docs.rs/serde_traitobject/0.1.2/serde_traitobject/struct.Arc.html) structs, which are simple wrappers around their stdlib counterparts that automatically handle (de)serialization without needing the above annotation;
 
 Additionally, there are several convenience traits implemented that extend their stdlib counterparts:
 
- * [Any](https://docs.rs/serde_traitobject/0.1.1/serde_traitobject/trait.Any.html), [Debug](https://docs.rs/serde_traitobject/0.1.1/serde_traitobject/trait.Debug.html), [Display](https://docs.rs/serde_traitobject/0.1.1/serde_traitobject/trait.Display.html), [Error](https://docs.rs/serde_traitobject/0.1.1/serde_traitobject/trait.Error.html), [Fn](https://docs.rs/serde_traitobject/0.1.1/serde_traitobject/trait.Fn.html), [FnBox](https://docs.rs/serde_traitobject/0.1.1/serde_traitobject/trait.FnBox.html), [FnMut](https://docs.rs/serde_traitobject/0.1.1/serde_traitobject/trait.FnMut.html), [FnOnce](https://docs.rs/serde_traitobject/0.1.1/serde_traitobject/trait.FnOnce.html)
+ * [Any](https://docs.rs/serde_traitobject/0.1.2/serde_traitobject/trait.Any.html), [Debug](https://docs.rs/serde_traitobject/0.1.2/serde_traitobject/trait.Debug.html), [Display](https://docs.rs/serde_traitobject/0.1.2/serde_traitobject/trait.Display.html), [Error](https://docs.rs/serde_traitobject/0.1.2/serde_traitobject/trait.Error.html), [Fn](https://docs.rs/serde_traitobject/0.1.2/serde_traitobject/trait.Fn.html), [FnBox](https://docs.rs/serde_traitobject/0.1.2/serde_traitobject/trait.FnBox.html), [FnMut](https://docs.rs/serde_traitobject/0.1.2/serde_traitobject/trait.FnMut.html), [FnOnce](https://docs.rs/serde_traitobject/0.1.2/serde_traitobject/trait.FnOnce.html)
 
 These are automatically implemented on all (de)serializable implementors of their stdlib counterparts:
 
