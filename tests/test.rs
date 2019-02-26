@@ -17,14 +17,8 @@
 	clippy::unseparated_literal_suffix
 )]
 
-#[macro_use]
-extern crate serde_derive;
-extern crate bincode;
-extern crate serde_json;
-#[macro_use]
-extern crate serde_closure;
-extern crate serde_traitobject;
-
+use serde_closure::Fn;
+use serde_derive::{Deserialize, Serialize};
 use serde_traitobject::{Deserialize, Serialize};
 use std::{any, env, fmt, process, rc};
 

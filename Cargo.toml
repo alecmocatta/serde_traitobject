@@ -1,19 +1,20 @@
 [package]
 name = "serde_traitobject"
 version = "0.1.2"
-license = "Apache-2.0"
+license = "MIT OR Apache-2.0"
 authors = ["Alec Mocatta <alec@mocatta.net>"]
 categories = ["development-tools","encoding","rust-patterns","network-programming"]
 keywords = ["trait-object","serialization","serde","distributed"]
 description = """
-Serializable trait objects.
+Serializable and deserializable trait objects.
 
-This library enables the serialization of trait objects such that they can be sent between other processes running the same binary.
+This library enables the serialization and deserialization of trait objects such that they can be sent between other processes running the same binary.
 """
 repository = "https://github.com/alecmocatta/serde_traitobject"
 homepage = "https://github.com/alecmocatta/serde_traitobject"
 documentation = "https://docs.rs/serde_traitobject/0.1.2"
 readme = "README.md"
+edition = "2018"
 
 [badges]
 appveyor = { repository = "alecmocatta/serde_traitobject" }
