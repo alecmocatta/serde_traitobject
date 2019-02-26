@@ -1,7 +1,7 @@
 # serde_traitobject
 
 [![Crates.io](https://img.shields.io/crates/v/serde_traitobject.svg?maxAge=86400)](https://crates.io/crates/serde_traitobject)
-[![Apache-2.0 licensed](https://img.shields.io/crates/l/serde_traitobject.svg?maxAge=2592000)](LICENSE.txt)
+[![MIT / Apache 2.0 licensed](https://img.shields.io/crates/l/serde_traitobject.svg?maxAge=2592000)](#License)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/alecmocatta/serde_traitobject?branch=master&svg=true)](https://ci.appveyor.com/project/alecmocatta/serde-traitobject)
 [![Build Status](https://circleci.com/gh/alecmocatta/serde_traitobject/tree/master.svg?style=shield)](https://circleci.com/gh/alecmocatta/serde_traitobject)
 [![Build Status](https://travis-ci.com/alecmocatta/serde_traitobject.svg?branch=master)](https://travis-ci.com/alecmocatta/serde_traitobject)
@@ -100,6 +100,11 @@ All together this leaves, as far as I'm aware, three soundness holes:
 This crate currently requires Rust nightly.
 
 ## License
-Licensed under Apache License, Version 2.0, ([LICENSE.txt](LICENSE.txt) or http://www.apache.org/licenses/LICENSE-2.0).
+Licensed under either of
 
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be licensed as above, without any additional terms or conditions.
+ * Apache License, Version 2.0, ([LICENSE-APACHE.txt](LICENSE-APACHE.txt) or http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license ([LICENSE-MIT.txt](LICENSE-MIT.txt) or http://opensource.org/licenses/MIT)
+
+at your option.
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
