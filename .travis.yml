@@ -13,26 +13,22 @@ addons:
 
 env:
   global:
-    - FMT_VERSION=nightly-2018-10-14
-    - CLIPPY_VERSION=nightly-2018-10-14
-    - DOCS_RS_VERSION=nightly-2018-10-14 # should be 2018-06-03 but failing due to lack of trivial_bounds feature # https://github.com/onur/docs.rs/blob/32102ce458b34f750ef190182116d9583491a64b/Vagrantfile#L50
+    - RUST_LINT_VERSION=nightly-2019-02-25
 
 matrix:
   include:
     - os: linux
-      dist: precise
+      dist: precise # https://docs.travis-ci.com/user/reference/overview/
       env: BUILD="" RUN="x86_64-unknown-linux-gnu i686-unknown-linux-gnu x86_64-unknown-linux-musl i686-unknown-linux-musl" RUSTFLAGS_VARIATIONS=";" DIST="precise" # ;-Cpanic=abort;-Clinker=gold
     - os: linux
       dist: trusty
-      sudo: false
       env: BUILD="" RUN="x86_64-unknown-linux-gnu i686-unknown-linux-gnu x86_64-unknown-linux-musl i686-unknown-linux-musl" RUSTFLAGS_VARIATIONS=";" DIST="trusty" # ;-Cpanic=abort;-Clinker=gold
     - os: linux
-      dist: trusty
-      sudo: required # https://docs.travis-ci.com/user/reference/overview/
-      env: BUILD="" RUN="x86_64-unknown-linux-gnu i686-unknown-linux-gnu x86_64-unknown-linux-musl i686-unknown-linux-musl" RUSTFLAGS_VARIATIONS=";" DIST="trusty" # ;-Cpanic=abort;-Clinker=gold
+      dist: xenial
+      env: BUILD="" RUN="x86_64-unknown-linux-gnu i686-unknown-linux-gnu x86_64-unknown-linux-musl i686-unknown-linux-musl" RUSTFLAGS_VARIATIONS=";" DIST="xenial" # ;-Cpanic=abort;-Clinker=gold
     - os: osx
       osx_image: xcode6.4 # https://docs.travis-ci.com/user/reference/osx/
-      env: BUILD="x86_64-unknown-linux-musl i686-unknown-linux-musl" RUN="x86_64-apple-darwin i686-apple-darwin" RUSTFLAGS_VARIATIONS=";" # https://github.com/rust-lang/rust/pull/49219 ;-Cpanic=abort
+      env: BUILD="x86_64-unknown-linux-musl i686-unknown-linux-musl" RUN="x86_64-apple-darwin i686-apple-darwin" RUSTFLAGS_VARIATIONS=";" # ;-Cpanic=abort
     - os: osx
       osx_image: xcode8.3
       env: BUILD="x86_64-unknown-linux-musl i686-unknown-linux-musl" RUN="x86_64-apple-darwin i686-apple-darwin" RUSTFLAGS_VARIATIONS=";" # ;-Cpanic=abort
@@ -49,26 +45,24 @@ before_script: |
       sudo -E apt-get -yq --no-install-suggests --no-install-recommends $(travis_apt_get_options) install libstdc++6-4.7-dev
     fi
     for TARGET in $BUILD $RUN; do [ "$TARGET" = $(rustup target list | grep default | grep -o -e '^[^ ]\+') ] || travis_retry rustup target add "$TARGET"; done
-    travis_retry rustup toolchain add $FMT_VERSION
-    travis_retry rustup toolchain add $CLIPPY_VERSION
-    travis_retry rustup component add rustfmt-preview --toolchain $FMT_VERSION
-    travis_retry rustup component add clippy-preview --toolchain $CLIPPY_VERSION
-    travis_retry rustup toolchain add $DOCS_RS_VERSION
-    for TARGET in $BUILD $RUN; do [ "$TARGET" = $(rustup target list | grep default | grep -o -e '^[^ ]\+') ] || travis_retry rustup target add --toolchain $DOCS_RS_VERSION "$TARGET"; done
+    travis_retry rustup toolchain add $RUST_LINT_VERSION
+    travis_retry rustup component add rustfmt --toolchain $RUST_LINT_VERSION
+    travis_retry rustup component add clippy --toolchain $RUST_LINT_VERSION
+    for TARGET in $BUILD $RUN; do [ "$TARGET" = $(rustup target list | grep default | grep -o -e '^[^ ]\+') ] || travis_retry rustup target add --toolchain $RUST_LINT_VERSION "$TARGET"; done
   )
 script: |
   ( set -o errexit;set -o pipefail; set -o xtrace;set -o nounset;
-    cargo +$FMT_VERSION fmt -- --check
-    RUSTFLAGS="-C target-cpu=native" cargo +$CLIPPY_VERSION clippy --all-targets --all-features -- -D warnings
+    cargo +$RUST_LINT_VERSION fmt -- --check
+    RUSTFLAGS="-C target-cpu=native" cargo +$RUST_LINT_VERSION clippy --all-targets --all-features -- -D warnings
     OLD_IFS=$IFS IFS=";"; for RUSTFLAGS in $RUSTFLAGS_VARIATIONS; do ( IFS=$OLD_IFS
       export RUSTFLAGS
       for TARGET in $BUILD $RUN; do (
-        [ \( "$TRAVIS_OS_NAME" = "osx" -o \( "$TRAVIS_OS_NAME" = "linux" -a "${DIST-}" = "precise" \) \) -a \( "$TARGET" = "x86_64-unknown-linux-musl" -o "$TARGET" = "i686-unknown-linux-musl" \) ] && RUSTFLAGS="$RUSTFLAGS -C linker=rust-lld -Z linker-flavor=ld.lld"
+        [ \( "$TRAVIS_OS_NAME" = "osx" -o \( "$TRAVIS_OS_NAME" = "linux" -a "${DIST-}" = "precise" \) \) -a \( "$TARGET" = "x86_64-unknown-linux-musl" -o "$TARGET" = "i686-unknown-linux-musl" \) ] && RUSTFLAGS="$RUSTFLAGS -C linker=rust-lld"
         cargo build --verbose --target "$TARGET" --all-targets --all-features
         RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" cargo build --verbose --target "$TARGET" --all-targets --all-features --release
       ); done
       for TARGET in $RUN; do (
-        [ \( "$TRAVIS_OS_NAME" = "osx" -o \( "$TRAVIS_OS_NAME" = "linux" -a "${DIST-}" = "precise" \) \) -a \( "$TARGET" = "x86_64-unknown-linux-musl" -o "$TARGET" = "i686-unknown-linux-musl" \) ] && RUSTFLAGS="$RUSTFLAGS -C linker=rust-lld -Z linker-flavor=ld.lld"
+        [ \( "$TRAVIS_OS_NAME" = "osx" -o \( "$TRAVIS_OS_NAME" = "linux" -a "${DIST-}" = "precise" \) \) -a \( "$TARGET" = "x86_64-unknown-linux-musl" -o "$TARGET" = "i686-unknown-linux-musl" \) ] && RUSTFLAGS="$RUSTFLAGS -C linker=rust-lld"
         RUST_BACKTRACE=full cargo test --target "$TARGET" --all-features
         RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo test --target "$TARGET" --all-features --release
         RUSTFLAGS="$RUSTFLAGS -C target-cpu=native" RUST_BACKTRACE=full cargo bench --target "$TARGET" --all-features
@@ -79,7 +73,7 @@ script: |
       ); done
     ); done; IFS=$OLD_IFS
     for TARGET in $BUILD $RUN; do
-      cargo +$DOCS_RS_VERSION doc --no-deps --target "$TARGET" --all-features --release &>/dev/null
+      cargo +$RUST_LINT_VERSION doc --no-deps --target "$TARGET" --all-features --release &>/dev/null
     done
   )
 

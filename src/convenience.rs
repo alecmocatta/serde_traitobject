@@ -10,7 +10,7 @@ pub struct Box<T: Serialize + Deserialize + ?Sized>(boxed::Box<T>);
 impl<T: Serialize + Deserialize> Box<T> {
 	/// Create a new Box wrapper
 	pub fn new(t: T) -> Self {
-		Box(boxed::Box::new(t))
+		Self(boxed::Box::new(t))
 	}
 }
 impl<T: Serialize + Deserialize + ?Sized> Box<T> {
@@ -47,7 +47,8 @@ impl<
 		T: Serialize + Deserialize + ?Sized + marker::Unsize<U>,
 		U: Serialize + Deserialize + ?Sized,
 	> ops::CoerceUnsized<Box<U>> for Box<T>
-{}
+{
+}
 impl<T: Serialize + Deserialize + ?Sized> Deref for Box<T> {
 	type Target = boxed::Box<T>;
 	fn deref(&self) -> &Self::Target {
@@ -91,7 +92,7 @@ impl<T: Serialize + Deserialize + ?Sized> BorrowMut<T> for Box<T> {
 }
 impl<T: Serialize + Deserialize + ?Sized> From<boxed::Box<T>> for Box<T> {
 	fn from(t: boxed::Box<T>) -> Self {
-		Box(t)
+		Self(t)
 	}
 }
 // impl<T: Serialize + Deserialize + ?Sized> Into<boxed::Box<T>> for Box<T> {
@@ -101,7 +102,7 @@ impl<T: Serialize + Deserialize + ?Sized> From<boxed::Box<T>> for Box<T> {
 // }
 impl<T: Serialize + Deserialize> From<T> for Box<T> {
 	fn from(t: T) -> Self {
-		Box(boxed::Box::new(t))
+		Self(boxed::Box::new(t))
 	}
 }
 impl<T: Serialize + Deserialize + fmt::Debug + ?Sized> fmt::Debug for Box<T> {
@@ -139,7 +140,7 @@ impl<'de, T: Serialize + Deserialize + ?Sized + 'static> serde::de::Deserialize<
 	where
 		D: serde::Deserializer<'de>,
 	{
-		deserialize(deserializer).map(Box)
+		deserialize(deserializer).map(Self)
 	}
 }
 
@@ -149,14 +150,15 @@ pub struct Rc<T: Serialize + Deserialize + ?Sized>(rc::Rc<T>);
 impl<T: Serialize + Deserialize> Rc<T> {
 	/// Create a new Rc wrapper
 	pub fn new(t: T) -> Self {
-		Rc(rc::Rc::new(t))
+		Self(rc::Rc::new(t))
 	}
 }
 impl<
 		T: Serialize + Deserialize + ?Sized + marker::Unsize<U>,
 		U: Serialize + Deserialize + ?Sized,
 	> ops::CoerceUnsized<Rc<U>> for Rc<T>
-{}
+{
+}
 impl<T: Serialize + Deserialize + ?Sized> Deref for Rc<T> {
 	type Target = rc::Rc<T>;
 	fn deref(&self) -> &Self::Target {
@@ -190,7 +192,7 @@ impl<T: Serialize + Deserialize + ?Sized> Borrow<T> for Rc<T> {
 }
 impl<T: Serialize + Deserialize + ?Sized> From<rc::Rc<T>> for Rc<T> {
 	fn from(t: rc::Rc<T>) -> Self {
-		Rc(t)
+		Self(t)
 	}
 }
 impl<T: Serialize + Deserialize + ?Sized> Into<rc::Rc<T>> for Rc<T> {
@@ -200,12 +202,12 @@ impl<T: Serialize + Deserialize + ?Sized> Into<rc::Rc<T>> for Rc<T> {
 }
 impl<T: Serialize + Deserialize> From<T> for Rc<T> {
 	fn from(t: T) -> Self {
-		Rc(rc::Rc::new(t))
+		Self(rc::Rc::new(t))
 	}
 }
 impl<T: Serialize + Deserialize + ?Sized> Clone for Rc<T> {
 	fn clone(&self) -> Self {
-		Rc(self.0.clone())
+		Self(self.0.clone())
 	}
 }
 impl<T: Serialize + Deserialize + fmt::Debug + ?Sized> fmt::Debug for Rc<T> {
@@ -231,7 +233,7 @@ impl<'de, T: Serialize + Deserialize + ?Sized + 'static> serde::de::Deserialize<
 	where
 		D: serde::Deserializer<'de>,
 	{
-		deserialize(deserializer).map(Rc)
+		deserialize(deserializer).map(Self)
 	}
 }
 
@@ -241,14 +243,15 @@ pub struct Arc<T: Serialize + Deserialize + ?Sized>(sync::Arc<T>);
 impl<T: Serialize + Deserialize> Arc<T> {
 	/// Create a new Arc wrapper
 	pub fn new(t: T) -> Self {
-		Arc(sync::Arc::new(t))
+		Self(sync::Arc::new(t))
 	}
 }
 impl<
 		T: Serialize + Deserialize + ?Sized + marker::Unsize<U>,
 		U: Serialize + Deserialize + ?Sized,
 	> ops::CoerceUnsized<Arc<U>> for Arc<T>
-{}
+{
+}
 impl<T: Serialize + Deserialize + ?Sized> Deref for Arc<T> {
 	type Target = sync::Arc<T>;
 	fn deref(&self) -> &Self::Target {
@@ -282,7 +285,7 @@ impl<T: Serialize + Deserialize + ?Sized> Borrow<T> for Arc<T> {
 }
 impl<T: Serialize + Deserialize + ?Sized> From<sync::Arc<T>> for Arc<T> {
 	fn from(t: sync::Arc<T>) -> Self {
-		Arc(t)
+		Self(t)
 	}
 }
 impl<T: Serialize + Deserialize + ?Sized> Into<sync::Arc<T>> for Arc<T> {
@@ -292,12 +295,12 @@ impl<T: Serialize + Deserialize + ?Sized> Into<sync::Arc<T>> for Arc<T> {
 }
 impl<T: Serialize + Deserialize> From<T> for Arc<T> {
 	fn from(t: T) -> Self {
-		Arc(sync::Arc::new(t))
+		Self(sync::Arc::new(t))
 	}
 }
 impl<T: Serialize + Deserialize + ?Sized> Clone for Arc<T> {
 	fn clone(&self) -> Self {
-		Arc(self.0.clone())
+		Self(self.0.clone())
 	}
 }
 impl<T: Serialize + Deserialize + fmt::Debug + ?Sized> fmt::Debug for Arc<T> {
@@ -323,7 +326,7 @@ impl<'de, T: Serialize + Deserialize + ?Sized + 'static> serde::de::Deserialize<
 	where
 		D: serde::Deserializer<'de>,
 	{
-		deserialize(deserializer).map(Arc)
+		deserialize(deserializer).map(Self)
 	}
 }
 
