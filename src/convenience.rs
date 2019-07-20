@@ -115,18 +115,6 @@ impl<T: Serialize + Deserialize + fmt::Display + ?Sized> fmt::Display for Box<T>
 		self.0.fmt(f)
 	}
 }
-impl<'a, A, R> ops::FnOnce<A> for Box<dyn FnBox<A, Output = R> + 'a> {
-	type Output = R;
-	extern "rust-call" fn call_once(self, args: A) -> R {
-		self.0.call_box(args)
-	}
-}
-impl<'a, A, R> ops::FnOnce<A> for Box<dyn FnBox<A, Output = R> + Send + 'a> {
-	type Output = R;
-	extern "rust-call" fn call_once(self, args: A) -> R {
-		self.0.call_box(args)
-	}
-}
 impl<T: Serialize + Deserialize + ?Sized + 'static> serde::ser::Serialize for Box<T> {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
@@ -493,12 +481,6 @@ impl<T: ?Sized> Debug for T where T: fmt::Debug + Serialize + Deserialize {}
 /// It can be made into a trait object which is then (de)serializable.
 pub trait FnOnce<Args>: ops::FnOnce<Args> + Serialize + Deserialize {}
 impl<T: ?Sized, Args> FnOnce<Args> for T where T: ops::FnOnce<Args> + Serialize + Deserialize {}
-
-/// A convenience trait implemented on all (de)serializable implementors of [std::boxed::FnBox].
-///
-/// It can be made into a trait object which is then (de)serializable.
-pub trait FnBox<Args>: boxed::FnBox<Args> + Serialize + Deserialize {}
-impl<T: ?Sized, Args> FnBox<Args> for T where T: boxed::FnBox<Args> + Serialize + Deserialize {}
 
 /// A convenience trait implemented on all (de)serializable implementors of [std::ops::FnMut].
 ///

@@ -35,7 +35,7 @@ There are two ways to (de)serialize your trait object:
 
 Additionally, there are several convenience traits implemented that extend their stdlib counterparts:
 
- * [Any](https://docs.rs/serde_traitobject/0.1.3/serde_traitobject/trait.Any.html), [Debug](https://docs.rs/serde_traitobject/0.1.3/serde_traitobject/trait.Debug.html), [Display](https://docs.rs/serde_traitobject/0.1.3/serde_traitobject/trait.Display.html), [Error](https://docs.rs/serde_traitobject/0.1.3/serde_traitobject/trait.Error.html), [Fn](https://docs.rs/serde_traitobject/0.1.3/serde_traitobject/trait.Fn.html), [FnBox](https://docs.rs/serde_traitobject/0.1.3/serde_traitobject/trait.FnBox.html), [FnMut](https://docs.rs/serde_traitobject/0.1.3/serde_traitobject/trait.FnMut.html), [FnOnce](https://docs.rs/serde_traitobject/0.1.3/serde_traitobject/trait.FnOnce.html)
+ * [Any](https://docs.rs/serde_traitobject/0.1.3/serde_traitobject/trait.Any.html), [Debug](https://docs.rs/serde_traitobject/0.1.3/serde_traitobject/trait.Debug.html), [Display](https://docs.rs/serde_traitobject/0.1.3/serde_traitobject/trait.Display.html), [Error](https://docs.rs/serde_traitobject/0.1.3/serde_traitobject/trait.Error.html), [Fn](https://docs.rs/serde_traitobject/0.1.3/serde_traitobject/trait.Fn.html), [FnMut](https://docs.rs/serde_traitobject/0.1.3/serde_traitobject/trait.FnMut.html), [FnOnce](https://docs.rs/serde_traitobject/0.1.3/serde_traitobject/trait.FnOnce.html)
 
 These are automatically implemented on all implementors of their stdlib counterparts that also implement `serde::Serialize` and `serde::de::DeserializeOwned`.
 
