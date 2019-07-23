@@ -98,7 +98,7 @@
 //!
 //! This crate currently requires Rust nightly.
 
-#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.1.3")]
+#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.1.4")]
 #![feature(
 	coerce_unsized,
 	core_intrinsics,
