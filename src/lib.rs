@@ -30,7 +30,7 @@
 //!
 //! Additionally, there are several convenience traits implemented that extend their stdlib counterparts:
 //!
-//!  * [Any], [Debug], [Display], [Error], [Fn], [FnBox], [FnMut], [FnOnce]
+//!  * [Any], [Debug], [Display], [Error], [Fn], [FnMut], [FnOnce]
 //!
 //! These are automatically implemented on all implementors of their stdlib counterparts that also implement `serde::Serialize` and `serde::de::DeserializeOwned`.
 //!
@@ -107,7 +107,6 @@
 	unsize,
 	specialization,
 	trivial_bounds,
-	fnbox
 )]
 #![warn(
 	missing_copy_implementations,
