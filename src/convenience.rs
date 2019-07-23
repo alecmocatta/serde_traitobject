@@ -115,6 +115,31 @@ impl<T: Serialize + Deserialize + fmt::Display + ?Sized> fmt::Display for Box<T>
 		self.0.fmt(f)
 	}
 }
+impl<A, F: ?Sized> ops::FnOnce<A> for Box<F>
+where
+	F: FnOnce<A>,
+{
+	type Output = F::Output;
+	extern "rust-call" fn call_once(self, args: A) -> Self::Output {
+		self.0.call_once(args)
+	}
+}
+impl<A, F: ?Sized> ops::FnMut<A> for Box<F>
+where
+	F: FnMut<A>,
+{
+	extern "rust-call" fn call_mut(&mut self, args: A) -> Self::Output {
+		self.0.call_mut(args)
+	}
+}
+impl<A, F: ?Sized> ops::Fn<A> for Box<F>
+where
+	F: Fn<A>,
+{
+	extern "rust-call" fn call(&self, args: A) -> Self::Output {
+		self.0.call(args)
+	}
+}
 impl<T: Serialize + Deserialize + ?Sized + 'static> serde::ser::Serialize for Box<T> {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where

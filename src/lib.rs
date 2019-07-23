@@ -100,11 +100,12 @@
 
 #![doc(html_root_url = "https://docs.rs/serde_traitobject/0.1.3")]
 #![feature(
-	unboxed_closures,
-	core_intrinsics,
 	coerce_unsized,
-	unsize,
-	specialization
+	core_intrinsics,
+	fn_traits,
+	specialization,
+	unboxed_closures,
+	unsize
 )]
 #![warn(
 	missing_copy_implementations,
