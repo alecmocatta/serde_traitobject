@@ -101,29 +101,23 @@
 #![doc(html_root_url = "https://docs.rs/serde_traitobject/0.1.3")]
 #![feature(
 	unboxed_closures,
-	fn_traits,
 	core_intrinsics,
 	coerce_unsized,
 	unsize,
-	specialization,
-	trivial_bounds,
+	specialization
 )]
 #![warn(
 	missing_copy_implementations,
 	missing_debug_implementations,
 	missing_docs,
+	trivial_casts,
 	trivial_numeric_casts,
-	unused_extern_crates,
 	unused_import_braces,
 	unused_qualifications,
 	unused_results,
 	clippy::pedantic
 )] // from https://github.com/rust-unofficial/patterns/blob/master/anti_patterns/deny-warnings.md
-#![allow(
-	where_clauses_object_safety,
-	clippy::inline_always,
-	clippy::doc_markdown
-)]
+#![allow(where_clauses_object_safety, clippy::inline_always)]
 
 mod convenience;
 
@@ -165,7 +159,7 @@ pub use convenience::*;
 /// # }
 /// ```
 ///
-/// Any implementers of `MyTrait` would now have to themselves implement `serde::Serialize` and `serde::de::DeserializeOwned`. This would typically be through serde_derive, like:
+/// Any implementers of `MyTrait` would now have to themselves implement `serde::Serialize` and `serde::de::DeserializeOwned`. This would typically be through `serde_derive`, like:
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
 /// # fn main() {
@@ -219,7 +213,7 @@ impl<T: serde::ser::Serialize + ?Sized> Serialize for T {}
 /// # }
 /// ```
 ///
-/// Any implementers of `MyTrait` would now have to themselves implement `serde::Serialize` and `serde::de::DeserializeOwned`. This would typically be through serde_derive, like:
+/// Any implementers of `MyTrait` would now have to themselves implement `serde::Serialize` and `serde::de::DeserializeOwned`. This would typically be through `serde_derive`, like:
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
 /// # fn main() {
@@ -283,7 +277,7 @@ mod deserialize {
 		/// Unsafe as it `ptr::write`s into `&mut self`, assuming it to be uninitialized
 		#[inline(always)]
 		unsafe fn deserialize_erased(
-			&mut self, deserializer: &mut erased_serde::Deserializer,
+			&mut self, deserializer: &mut dyn erased_serde::Deserializer,
 		) -> Result<(), erased_serde::Error> {
 			let _ = deserializer;
 			unreachable!()
@@ -308,7 +302,7 @@ mod deserialize {
 	impl<T: serde::de::DeserializeOwned> Sealed for T {
 		#[inline(always)]
 		unsafe fn deserialize_erased(
-			&mut self, deserializer: &mut erased_serde::Deserializer,
+			&mut self, deserializer: &mut dyn erased_serde::Deserializer,
 		) -> Result<(), erased_serde::Error> {
 			erased_serde::deserialize(deserializer).map(|x| ptr::write(self, x))
 		}

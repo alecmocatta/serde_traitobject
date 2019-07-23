@@ -2,9 +2,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/serde_traitobject.svg?maxAge=86400)](https://crates.io/crates/serde_traitobject)
 [![MIT / Apache 2.0 licensed](https://img.shields.io/crates/l/serde_traitobject.svg?maxAge=2592000)](#License)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/alecmocatta/serde_traitobject?branch=master&svg=true)](https://ci.appveyor.com/project/alecmocatta/serde-traitobject)
-[![Build Status](https://circleci.com/gh/alecmocatta/serde_traitobject/tree/master.svg?style=shield)](https://circleci.com/gh/alecmocatta/serde_traitobject)
-[![Build Status](https://travis-ci.com/alecmocatta/serde_traitobject.svg?branch=master)](https://travis-ci.com/alecmocatta/serde_traitobject)
+[![Build Status](https://dev.azure.com/alecmocatta/serde_traitobject/_apis/build/status/tests?branchName=master)](https://dev.azure.com/alecmocatta/serde_traitobject/_build/latest?branchName=master)
 
 [Docs](https://docs.rs/serde_traitobject/0.1.3/serde_traitobject/)
 

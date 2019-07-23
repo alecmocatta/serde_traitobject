@@ -10,12 +10,7 @@
 	unused_results,
 	clippy::pedantic
 )] // from https://github.com/rust-unofficial/patterns/blob/master/anti_patterns/deny-warnings.md
-#![allow(
-	where_clauses_object_safety,
-	clippy::inline_always,
-	clippy::doc_markdown,
-	clippy::unseparated_literal_suffix
-)]
+#![allow(where_clauses_object_safety, clippy::unseparated_literal_suffix)]
 
 use serde_closure::Fn;
 use serde_derive::{Deserialize, Serialize};
@@ -25,17 +20,17 @@ use std::{any, env, fmt, process, rc};
 #[derive(Serialize, Deserialize)]
 struct Abc {
 	#[serde(with = "serde_traitobject")]
-	a: rc::Rc<HelloSerializeBox>,
-	b: serde_traitobject::Rc<HelloSerializeBox>,
+	a: rc::Rc<dyn HelloSerializeBox>,
+	b: serde_traitobject::Rc<dyn HelloSerializeBox>,
 	#[serde(with = "serde_traitobject")]
-	c: Box<HelloSerializeBox>,
-	d: serde_traitobject::Box<HelloSerializeBox>,
+	c: Box<dyn HelloSerializeBox>,
+	d: serde_traitobject::Box<dyn HelloSerializeBox>,
 	#[serde(with = "serde_traitobject")]
-	e: Box<serde_traitobject::Any>,
-	f: serde_traitobject::Box<serde_traitobject::Any>,
-	g: serde_traitobject::Box<serde_traitobject::Fn(usize) -> String>,
-	h: serde_traitobject::Box<serde_traitobject::Any>,
-	i: serde_traitobject::Box<serde_traitobject::Any>,
+	e: Box<dyn serde_traitobject::Any>,
+	f: serde_traitobject::Box<dyn serde_traitobject::Any>,
+	g: serde_traitobject::Box<dyn serde_traitobject::Fn(usize) -> String>,
+	h: serde_traitobject::Box<dyn serde_traitobject::Any>,
+	i: serde_traitobject::Box<dyn serde_traitobject::Any>,
 	j: serde_traitobject::Box<String>,
 	#[serde(with = "serde_traitobject")]
 	k: Box<String>,
@@ -90,16 +85,23 @@ fn main() {
 		assert_eq!(b.hi(), "hi u16! 456");
 		assert_eq!(c.hi(), "hi u32! 789");
 		assert_eq!(d.hi(), "hi u8! 101");
-		assert_eq!(*Box::<any::Any>::downcast::<u8>(e.into_any()).unwrap(), 78);
-		assert_eq!(*Box::<any::Any>::downcast::<u8>(f.into_any()).unwrap(), 78);
+		assert_eq!(
+			*Box::<dyn any::Any>::downcast::<u8>(e.into_any()).unwrap(),
+			78
+		);
+		assert_eq!(
+			*Box::<dyn any::Any>::downcast::<u8>(f.into_any()).unwrap(),
+			78
+		);
 		assert_eq!(g(22), "hey 123!");
 		assert_eq!(
-			***Box::<any::Any>::downcast::<serde_traitobject::Box<usize>>(h.into_any()).unwrap(),
+			***Box::<dyn any::Any>::downcast::<serde_traitobject::Box<usize>>(h.into_any())
+				.unwrap(),
 			987_654_321
 		);
 		assert_eq!(
-			*Box::<any::Any>::downcast::<usize>(
-				Box::<any::Any>::downcast::<serde_traitobject::Box<serde_traitobject::Any>>(
+			*Box::<dyn any::Any>::downcast::<usize>(
+				Box::<dyn any::Any>::downcast::<serde_traitobject::Box<dyn serde_traitobject::Any>>(
 					i.into_any()
 				)
 				.unwrap()
@@ -117,20 +119,20 @@ fn main() {
 	};
 
 	for _ in 0..1_000 {
-		let a: Box<any::Any> = Box::new(Box::new(1usize) as Box<any::Any>);
-		let a: Box<Box<any::Any>> = Box::<any::Any>::downcast(a).unwrap();
-		let a: Box<any::Any> = *a;
-		let _: Box<usize> = Box::<any::Any>::downcast(a).unwrap();
+		let a: Box<dyn any::Any> = Box::new(Box::new(1usize) as Box<dyn any::Any>);
+		let a: Box<Box<dyn any::Any>> = Box::<dyn any::Any>::downcast(a).unwrap();
+		let a: Box<dyn any::Any> = *a;
+		let _: Box<usize> = Box::<dyn any::Any>::downcast(a).unwrap();
 
-		let a: serde_traitobject::Box<serde_traitobject::Any> =
+		let a: serde_traitobject::Box<dyn serde_traitobject::Any> =
 			serde_traitobject::Box::new(serde_traitobject::Box::new(1usize)
-				as serde_traitobject::Box<serde_traitobject::Any>);
-		let a: Box<any::Any> = a.into_any();
-		let a: Box<serde_traitobject::Box<serde_traitobject::Any>> =
-			Box::<any::Any>::downcast(a).unwrap();
-		let a: serde_traitobject::Box<serde_traitobject::Any> = *a;
-		let a: Box<any::Any> = a.into_any();
-		let _: Box<usize> = Box::<any::Any>::downcast(a).unwrap();
+				as serde_traitobject::Box<dyn serde_traitobject::Any>);
+		let a: Box<dyn any::Any> = a.into_any();
+		let a: Box<serde_traitobject::Box<dyn serde_traitobject::Any>> =
+			Box::<dyn any::Any>::downcast(a).unwrap();
+		let a: serde_traitobject::Box<dyn serde_traitobject::Any> = *a;
+		let a: Box<dyn any::Any> = a.into_any();
+		let _: Box<usize> = Box::<dyn any::Any>::downcast(a).unwrap();
 
 		let original = Abc {
 			a: rc::Rc::new(123u16),
@@ -142,7 +144,7 @@ fn main() {
 			g: serde_traitobject::Box::new(Fn!(|a: usize| format!("hey {}!", a + 101))),
 			h: serde_traitobject::Box::new(serde_traitobject::Box::new(987_654_321usize)),
 			i: serde_traitobject::Box::new(serde_traitobject::Box::new(987_654_321usize)
-				as serde_traitobject::Box<serde_traitobject::Any>),
+				as serde_traitobject::Box<dyn serde_traitobject::Any>),
 			j: serde_traitobject::Box::new(String::from("abc")),
 			k: Box::new(String::from("def")),
 			l: Into::<Box<str>>::into(String::from("ghi")).into(),
@@ -158,21 +160,21 @@ fn main() {
 		test(a2);
 		let a1 = serde_json::to_string(
 			&(serde_traitobject::Box::new(78u8)
-				as serde_traitobject::Box<serde_traitobject::Debug>),
+				as serde_traitobject::Box<dyn serde_traitobject::Debug>),
 		)
 		.unwrap();
-		let a1r: Result<serde_traitobject::Box<serde_traitobject::Debug>, _> =
+		let a1r: Result<serde_traitobject::Box<dyn serde_traitobject::Debug>, _> =
 			serde_json::from_str(&a1);
 		assert!(a1r.is_ok());
-		let a1r: Result<serde_traitobject::Box<serde_traitobject::Any>, _> =
+		let a1r: Result<serde_traitobject::Box<dyn serde_traitobject::Any>, _> =
 			serde_json::from_str(&a1);
 		assert!(a1r.is_err());
 		let a1 = bincode::serialize(
 			&(serde_traitobject::Box::new(78u8)
-				as serde_traitobject::Box<serde_traitobject::Debug>),
+				as serde_traitobject::Box<dyn serde_traitobject::Debug>),
 		)
 		.unwrap();
-		let a1: Result<serde_traitobject::Box<serde_traitobject::Any>, _> =
+		let a1: Result<serde_traitobject::Box<dyn serde_traitobject::Any>, _> =
 			bincode::deserialize(&a1);
 		assert!(a1.is_err());
 	}
@@ -187,7 +189,7 @@ fn main() {
 		g: serde_traitobject::Box::new(Fn!(|a: usize| format!("hey {}!", a + 101))),
 		h: serde_traitobject::Box::new(serde_traitobject::Box::new(987_654_321usize)),
 		i: serde_traitobject::Box::new(serde_traitobject::Box::new(987_654_321usize)
-			as serde_traitobject::Box<serde_traitobject::Any>),
+			as serde_traitobject::Box<dyn serde_traitobject::Any>),
 		j: serde_traitobject::Box::new(String::from("abc")),
 		k: Box::new(String::from("def")),
 		l: Into::<Box<str>>::into(String::from("ghi")).into(),

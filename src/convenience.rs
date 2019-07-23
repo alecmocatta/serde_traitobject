@@ -4,7 +4,7 @@ use std::{
 	any, borrow::{Borrow, BorrowMut}, boxed, error, fmt, marker, ops::{self, Deref, DerefMut}, rc, sync
 };
 
-/// Convenience wrapper around [std::boxed::Box<T>](std::boxed::Box) that automatically uses serde_traitobject for (de)serialization.
+/// Convenience wrapper around [std::boxed::Box<T>](std::boxed::Box) that automatically uses `serde_traitobject` for (de)serialization.
 #[derive(Clone, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Box<T: Serialize + Deserialize + ?Sized>(boxed::Box<T>);
 impl<T: Serialize + Deserialize> Box<T> {
@@ -19,27 +19,27 @@ impl<T: Serialize + Deserialize + ?Sized> Box<T> {
 		self.0
 	}
 }
-impl Box<Any> {
+impl Box<dyn Any> {
 	/// Convert into a `std::boxed::Box<dyn std::any::Any>`.
-	pub fn into_any(self) -> boxed::Box<any::Any> {
+	pub fn into_any(self) -> boxed::Box<dyn any::Any> {
 		self.0.into_any()
 	}
 }
-impl Box<Any + Send> {
+impl Box<dyn Any + Send> {
 	/// Convert into a `std::boxed::Box<dyn std::any::Any + Send>`.
-	pub fn into_any_send(self) -> boxed::Box<any::Any + Send> {
+	pub fn into_any_send(self) -> boxed::Box<dyn any::Any + Send> {
 		self.0.into_any_send()
 	}
 }
-impl Box<Any + Sync> {
+impl Box<dyn Any + Sync> {
 	/// Convert into a `std::boxed::Box<dyn std::any::Any + Sync>`.
-	pub fn into_any_sync(self) -> boxed::Box<any::Any + Sync> {
+	pub fn into_any_sync(self) -> boxed::Box<dyn any::Any + Sync> {
 		self.0.into_any_sync()
 	}
 }
-impl Box<Any + Send + Sync> {
+impl Box<dyn Any + Send + Sync> {
 	/// Convert into a `std::boxed::Box<dyn std::any::Any + Send + Sync>`.
-	pub fn into_any_send_sync(self) -> boxed::Box<any::Any + Send + Sync> {
+	pub fn into_any_send_sync(self) -> boxed::Box<dyn any::Any + Send + Sync> {
 		self.0.into_any_send_sync()
 	}
 }
@@ -132,7 +132,7 @@ impl<'de, T: Serialize + Deserialize + ?Sized + 'static> serde::de::Deserialize<
 	}
 }
 
-/// Convenience wrapper around [std::rc::Rc<T>](std::rc::Rc) that automatically uses serde_traitobject for (de)serialization.
+/// Convenience wrapper around [std::rc::Rc<T>](std::rc::Rc) that automatically uses `serde_traitobject` for (de)serialization.
 #[derive(Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Rc<T: Serialize + Deserialize + ?Sized>(rc::Rc<T>);
 impl<T: Serialize + Deserialize> Rc<T> {
@@ -225,7 +225,7 @@ impl<'de, T: Serialize + Deserialize + ?Sized + 'static> serde::de::Deserialize<
 	}
 }
 
-/// Convenience wrapper around [std::sync::Arc<T>](std::sync::Arc) that automatically uses serde_traitobject for (de)serialization.
+/// Convenience wrapper around [std::sync::Arc<T>](std::sync::Arc) that automatically uses `serde_traitobject` for (de)serialization.
 #[derive(Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Arc<T: Serialize + Deserialize + ?Sized>(sync::Arc<T>);
 impl<T: Serialize + Deserialize> Arc<T> {
@@ -318,7 +318,7 @@ impl<'de, T: Serialize + Deserialize + ?Sized + 'static> serde::de::Deserialize<
 	}
 }
 
-/// A convenience trait implemented on all (de)serializable implementors of [std::any::Any].
+/// A convenience trait implemented on all (de)serializable implementors of [`std::any::Any`].
 ///
 /// It can be made into a trait object which is then (de)serializable.
 ///
@@ -342,47 +342,47 @@ impl<'de, T: Serialize + Deserialize + ?Sized + 'static> serde::de::Deserialize<
 /// ```
 pub trait Any: Serialize + Deserialize + any::Any {
 	/// Convert to a `&std::any::Any`.
-	fn as_any(&self) -> &any::Any;
+	fn as_any(&self) -> &dyn any::Any;
 	/// Convert to a `&mut std::any::Any`.
-	fn as_any_mut(&mut self) -> &mut any::Any;
+	fn as_any_mut(&mut self) -> &mut dyn any::Any;
 	/// Convert to a `std::boxed::Box<dyn std::any::Any>`.
-	fn into_any(self: boxed::Box<Self>) -> boxed::Box<any::Any>;
+	fn into_any(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any>;
 	/// Convert to a `std::boxed::Box<dyn std::any::Any + Send>`.
-	fn into_any_send(self: boxed::Box<Self>) -> boxed::Box<any::Any + Send>
+	fn into_any_send(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any + Send>
 	where
 		Self: Send;
 	/// Convert to a `std::boxed::Box<dyn std::any::Any + Sync>`.
-	fn into_any_sync(self: boxed::Box<Self>) -> boxed::Box<any::Any + Sync>
+	fn into_any_sync(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any + Sync>
 	where
 		Self: Sync;
 	/// Convert to a `std::boxed::Box<dyn std::any::Any + Send + Sync>`.
-	fn into_any_send_sync(self: boxed::Box<Self>) -> boxed::Box<any::Any + Send + Sync>
+	fn into_any_send_sync(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any + Send + Sync>
 	where
 		Self: Send + Sync;
 }
 impl<T: Serialize + Deserialize + any::Any> Any for T {
-	fn as_any(&self) -> &any::Any {
+	fn as_any(&self) -> &dyn any::Any {
 		self
 	}
-	fn as_any_mut(&mut self) -> &mut any::Any {
+	fn as_any_mut(&mut self) -> &mut dyn any::Any {
 		self
 	}
-	fn into_any(self: boxed::Box<Self>) -> boxed::Box<any::Any> {
+	fn into_any(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any> {
 		self
 	}
-	fn into_any_send(self: boxed::Box<Self>) -> boxed::Box<any::Any + Send>
+	fn into_any_send(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any + Send>
 	where
 		Self: Send,
 	{
 		self
 	}
-	fn into_any_sync(self: boxed::Box<Self>) -> boxed::Box<any::Any + Sync>
+	fn into_any_sync(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any + Sync>
 	where
 		Self: Sync,
 	{
 		self
 	}
-	fn into_any_send_sync(self: boxed::Box<Self>) -> boxed::Box<any::Any + Send + Sync>
+	fn into_any_send_sync(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any + Send + Sync>
 	where
 		Self: Send + Sync,
 	{
@@ -390,7 +390,7 @@ impl<T: Serialize + Deserialize + any::Any> Any for T {
 	}
 }
 
-/// A convenience trait implemented on all (de)serializable implementors of [std::error::Error].
+/// A convenience trait implemented on all (de)serializable implementors of [`std::error::Error`].
 ///
 /// It can be made into a trait object which is then (de)serializable.
 ///
@@ -426,7 +426,7 @@ impl<T: Serialize + Deserialize + any::Any> Any for T {
 pub trait Error: error::Error + Serialize + Deserialize {}
 impl<T: ?Sized> Error for T where T: error::Error + Serialize + Deserialize {}
 
-/// A convenience trait implemented on all (de)serializable implementors of [std::fmt::Display].
+/// A convenience trait implemented on all (de)serializable implementors of [`std::fmt::Display`].
 ///
 /// It can be made into a trait object which is then (de)serializable.
 ///
@@ -451,7 +451,7 @@ impl<T: ?Sized> Error for T where T: error::Error + Serialize + Deserialize {}
 pub trait Display: fmt::Display + Serialize + Deserialize {}
 impl<T: ?Sized> Display for T where T: fmt::Display + Serialize + Deserialize {}
 
-/// A convenience trait implemented on all (de)serializable implementors of [std::fmt::Debug].
+/// A convenience trait implemented on all (de)serializable implementors of [`std::fmt::Debug`].
 ///
 /// It can be made into a trait object which is then (de)serializable.
 ///
@@ -476,19 +476,19 @@ impl<T: ?Sized> Display for T where T: fmt::Display + Serialize + Deserialize {}
 pub trait Debug: fmt::Debug + Serialize + Deserialize {}
 impl<T: ?Sized> Debug for T where T: fmt::Debug + Serialize + Deserialize {}
 
-/// A convenience trait implemented on all (de)serializable implementors of [std::ops::FnOnce].
+/// A convenience trait implemented on all (de)serializable implementors of [`std::ops::FnOnce`].
 ///
 /// It can be made into a trait object which is then (de)serializable.
 pub trait FnOnce<Args>: ops::FnOnce<Args> + Serialize + Deserialize {}
 impl<T: ?Sized, Args> FnOnce<Args> for T where T: ops::FnOnce<Args> + Serialize + Deserialize {}
 
-/// A convenience trait implemented on all (de)serializable implementors of [std::ops::FnMut].
+/// A convenience trait implemented on all (de)serializable implementors of [`std::ops::FnMut`].
 ///
 /// It can be made into a trait object which is then (de)serializable.
 pub trait FnMut<Args>: ops::FnMut<Args> + Serialize + Deserialize {}
 impl<T: ?Sized, Args> FnMut<Args> for T where T: ops::FnMut<Args> + Serialize + Deserialize {}
 
-/// A convenience trait implemented on all (de)serializable implementors of [std::ops::Fn].
+/// A convenience trait implemented on all (de)serializable implementors of [`std::ops::Fn`].
 ///
 /// It can be made into a trait object which is then (de)serializable.
 pub trait Fn<Args>: ops::Fn<Args> + Serialize + Deserialize {}
