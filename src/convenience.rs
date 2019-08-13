@@ -439,6 +439,34 @@ where
 pub trait Error: error::Error + Serialize + Deserialize {}
 impl<T: ?Sized> Error for T where T: error::Error + Serialize + Deserialize {}
 
+impl<'a, E: error::Error + Serialize + Deserialize + 'a> From<E> for Box<dyn Error + 'a> {
+	fn from(err: E) -> Box<dyn Error + 'a> {
+		Box::new(err)
+	}
+}
+impl<'a, E: error::Error + Serialize + Deserialize + 'a> From<E> for boxed::Box<dyn Error + 'a> {
+	fn from(err: E) -> boxed::Box<dyn Error + 'a> {
+		boxed::Box::new(err)
+	}
+}
+
+impl<'a> serde::ser::Serialize for boxed::Box<dyn Error + 'static> {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(&self, serializer)
+	}
+}
+impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Error + 'static> {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn Error + 'static>>::deserialize(deserializer).map(|x|x.0)
+	}
+}
+
 /// A convenience trait implemented on all (de)serializable implementors of [`std::fmt::Display`].
 ///
 /// It can be made into a trait object which is then (de)serializable.
