@@ -100,6 +100,18 @@ impl<T> From<T> for Box<T> {
 		Self(boxed::Box::new(t))
 	}
 }
+impl<T: error::Error> error::Error for Box<T> {
+	fn description(&self) -> &str {
+		error::Error::description(&**self)
+	}
+	#[allow(deprecated)]
+	fn cause(&self) -> Option<&dyn error::Error> {
+		error::Error::cause(&**self)
+	}
+	fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+		error::Error::source(&**self)
+	}
+}
 impl<T: fmt::Debug + ?Sized> fmt::Debug for Box<T> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
 		self.0.fmt(f)
@@ -439,6 +451,36 @@ where
 pub trait Error: error::Error + Serialize + Deserialize {}
 impl<T: ?Sized> Error for T where T: error::Error + Serialize + Deserialize {}
 
+#[allow(clippy::use_self)]
+impl<'a, E: error::Error + Serialize + Deserialize + 'a> From<E> for Box<dyn Error + 'a> {
+	fn from(err: E) -> Self {
+		Box::new(err)
+	}
+}
+#[allow(clippy::use_self)]
+impl<'a, E: error::Error + Serialize + Deserialize + 'a> From<E> for boxed::Box<dyn Error + 'a> {
+	fn from(err: E) -> Self {
+		boxed::Box::new(err)
+	}
+}
+
+impl serde::ser::Serialize for boxed::Box<dyn Error + 'static> {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(&self, serializer)
+	}
+}
+impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Error + 'static> {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn Error + 'static>>::deserialize(deserializer).map(|x| x.0)
+	}
+}
+
 /// A convenience trait implemented on all (de)serializable implementors of [`std::fmt::Display`].
 ///
 /// It can be made into a trait object which is then (de)serializable.
@@ -463,6 +505,23 @@ impl<T: ?Sized> Error for T where T: error::Error + Serialize + Deserialize {}
 /// ```
 pub trait Display: fmt::Display + Serialize + Deserialize {}
 impl<T: ?Sized> Display for T where T: fmt::Display + Serialize + Deserialize {}
+
+impl serde::ser::Serialize for boxed::Box<dyn Display + 'static> {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(&self, serializer)
+	}
+}
+impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Display + 'static> {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn Display + 'static>>::deserialize(deserializer).map(|x| x.0)
+	}
+}
 
 /// A convenience trait implemented on all (de)serializable implementors of [`std::fmt::Debug`].
 ///
@@ -489,11 +548,49 @@ impl<T: ?Sized> Display for T where T: fmt::Display + Serialize + Deserialize {}
 pub trait Debug: fmt::Debug + Serialize + Deserialize {}
 impl<T: ?Sized> Debug for T where T: fmt::Debug + Serialize + Deserialize {}
 
+impl serde::ser::Serialize for boxed::Box<dyn Debug + 'static> {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(&self, serializer)
+	}
+}
+impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Debug + 'static> {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn Debug + 'static>>::deserialize(deserializer).map(|x| x.0)
+	}
+}
+
 /// A convenience trait implemented on all (de)serializable implementors of [`std::ops::FnOnce`].
 ///
 /// It can be made into a trait object which is then (de)serializable.
 pub trait FnOnce<Args>: ops::FnOnce<Args> + Serialize + Deserialize {}
 impl<T: ?Sized, Args> FnOnce<Args> for T where T: ops::FnOnce<Args> + Serialize + Deserialize {}
+
+impl<Args: 'static, Output: 'static> serde::ser::Serialize
+	for boxed::Box<dyn FnOnce<Args, Output = Output> + 'static>
+{
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(&self, serializer)
+	}
+}
+impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
+	for boxed::Box<dyn FnOnce<Args, Output = Output> + 'static>
+{
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn FnOnce<Args, Output = Output> + 'static>>::deserialize(deserializer).map(|x| x.0)
+	}
+}
 
 /// A convenience trait implemented on all (de)serializable implementors of [`std::ops::FnMut`].
 ///
@@ -501,8 +598,50 @@ impl<T: ?Sized, Args> FnOnce<Args> for T where T: ops::FnOnce<Args> + Serialize 
 pub trait FnMut<Args>: ops::FnMut<Args> + Serialize + Deserialize {}
 impl<T: ?Sized, Args> FnMut<Args> for T where T: ops::FnMut<Args> + Serialize + Deserialize {}
 
+impl<Args: 'static, Output: 'static> serde::ser::Serialize
+	for boxed::Box<dyn FnMut<Args, Output = Output> + 'static>
+{
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(&self, serializer)
+	}
+}
+impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
+	for boxed::Box<dyn FnMut<Args, Output = Output> + 'static>
+{
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn FnMut<Args, Output = Output> + 'static>>::deserialize(deserializer).map(|x| x.0)
+	}
+}
+
 /// A convenience trait implemented on all (de)serializable implementors of [`std::ops::Fn`].
 ///
 /// It can be made into a trait object which is then (de)serializable.
 pub trait Fn<Args>: ops::Fn<Args> + Serialize + Deserialize {}
 impl<T: ?Sized, Args> Fn<Args> for T where T: ops::Fn<Args> + Serialize + Deserialize {}
+
+impl<Args: 'static, Output: 'static> serde::ser::Serialize
+	for boxed::Box<dyn Fn<Args, Output = Output> + 'static>
+{
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(&self, serializer)
+	}
+}
+impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
+	for boxed::Box<dyn Fn<Args, Output = Output> + 'static>
+{
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn Fn<Args, Output = Output> + 'static>>::deserialize(deserializer).map(|x| x.0)
+	}
+}
