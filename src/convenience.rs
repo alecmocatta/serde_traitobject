@@ -101,16 +101,16 @@ impl<T> From<T> for Box<T> {
 	}
 }
 impl<T: error::Error> error::Error for Box<T> {
-    fn description(&self) -> &str {
-        error::Error::description(&**self)
-    }
-    #[allow(deprecated)]
-    fn cause(&self) -> Option<&dyn error::Error> {
-        error::Error::cause(&**self)
-    }
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        error::Error::source(&**self)
-    }
+	fn description(&self) -> &str {
+		error::Error::description(&**self)
+	}
+	#[allow(deprecated)]
+	fn cause(&self) -> Option<&dyn error::Error> {
+		error::Error::cause(&**self)
+	}
+	fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+		error::Error::source(&**self)
+	}
 }
 impl<T: fmt::Debug + ?Sized> fmt::Debug for Box<T> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
