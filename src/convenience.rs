@@ -451,13 +451,15 @@ where
 pub trait Error: error::Error + Serialize + Deserialize {}
 impl<T: ?Sized> Error for T where T: error::Error + Serialize + Deserialize {}
 
+#[allow(clippy::use_self)]
 impl<'a, E: error::Error + Serialize + Deserialize + 'a> From<E> for Box<dyn Error + 'a> {
-	fn from(err: E) -> Box<dyn Error + 'a> {
+	fn from(err: E) -> Self {
 		Box::new(err)
 	}
 }
+#[allow(clippy::use_self)]
 impl<'a, E: error::Error + Serialize + Deserialize + 'a> From<E> for boxed::Box<dyn Error + 'a> {
-	fn from(err: E) -> boxed::Box<dyn Error + 'a> {
+	fn from(err: E) -> Self {
 		boxed::Box::new(err)
 	}
 }

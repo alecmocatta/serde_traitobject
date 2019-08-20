@@ -125,7 +125,7 @@ mod convenience;
 use relative::Vtable;
 use serde::ser::SerializeTuple;
 use std::{
-	boxed, fmt, intrinsics, marker, mem::{self, ManuallyDrop}, ptr
+	any::type_name, boxed, fmt, intrinsics, marker, mem::{self, ManuallyDrop}, ptr
 };
 
 pub use convenience::*;
@@ -429,9 +429,7 @@ impl<T: Deserialize + ?Sized + 'static> DeserializerTrait<T> for Deserializer<T>
 		impl<'de, T: Deserialize + ?Sized + 'static> serde::de::Visitor<'de> for Visitor<T> {
 			type Value = boxed::Box<T>;
 			fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-				write!(formatter, "a \"{}\" trait object", unsafe {
-					intrinsics::type_name::<T>()
-				})
+				write!(formatter, "a \"{}\" trait object", type_name::<T>())
 			}
 			#[inline(always)]
 			fn visit_seq<A>(self, mut seq: A) -> Result<boxed::Box<T>, A::Error>
@@ -452,7 +450,7 @@ impl<T: Deserialize + ?Sized + 'static> DeserializerTrait<T> for Deserializer<T>
 					Some(value) => value,
 					None => return Err(serde::de::Error::invalid_length(1, &self)),
 				};
-				assert_eq!(t1, object.type_id(), "Deserializing the trait object \"{}\" failed in a way that should never happen. Please file an issue! https://github.com/alecmocatta/serde_traitobject/issues/new", unsafe{intrinsics::type_name::<T>()});
+				assert_eq!(t1, object.type_id(), "Deserializing the trait object \"{}\" failed in a way that should never happen. Please file an issue! https://github.com/alecmocatta/serde_traitobject/issues/new", type_name::<T>());
 				let t2: boxed::Box<T> = match seq
 					.next_element_seed(DeserializeErased(ManuallyDrop::into_inner(object)))?
 				{
