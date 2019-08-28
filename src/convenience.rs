@@ -415,6 +415,39 @@ where
 	}
 }
 
+impl serde::ser::Serialize for boxed::Box<dyn Any + 'static> {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(&self, serializer)
+	}
+}
+impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Any + 'static> {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn Any + 'static>>::deserialize(deserializer).map(|x| x.0)
+	}
+}
+impl serde::ser::Serialize for boxed::Box<dyn Any + Send + 'static> {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(&self, serializer)
+	}
+}
+impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Any + Send + 'static> {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn Any + Send + 'static>>::deserialize(deserializer).map(|x| x.0)
+	}
+}
+
 /// A convenience trait implemented on all (de)serializable implementors of [`std::error::Error`].
 ///
 /// It can be made into a trait object which is then (de)serializable.
@@ -480,6 +513,22 @@ impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Error + 'static> {
 		<Box<dyn Error + 'static>>::deserialize(deserializer).map(|x| x.0)
 	}
 }
+impl serde::ser::Serialize for boxed::Box<dyn Error + Send + 'static> {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(&self, serializer)
+	}
+}
+impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Error + Send + 'static> {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn Error + Send + 'static>>::deserialize(deserializer).map(|x| x.0)
+	}
+}
 
 /// A convenience trait implemented on all (de)serializable implementors of [`std::fmt::Display`].
 ///
@@ -520,6 +569,22 @@ impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Display + 'static> {
 		D: serde::Deserializer<'de>,
 	{
 		<Box<dyn Display + 'static>>::deserialize(deserializer).map(|x| x.0)
+	}
+}
+impl serde::ser::Serialize for boxed::Box<dyn Display + Send + 'static> {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(&self, serializer)
+	}
+}
+impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Display + Send + 'static> {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn Display + Send + 'static>>::deserialize(deserializer).map(|x| x.0)
 	}
 }
 
@@ -564,6 +629,22 @@ impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Debug + 'static> {
 		<Box<dyn Debug + 'static>>::deserialize(deserializer).map(|x| x.0)
 	}
 }
+impl serde::ser::Serialize for boxed::Box<dyn Debug + Send + 'static> {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(&self, serializer)
+	}
+}
+impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Debug + Send + 'static> {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn Debug + Send + 'static>>::deserialize(deserializer).map(|x| x.0)
+	}
+}
 
 /// A convenience trait implemented on all (de)serializable implementors of [`std::ops::FnOnce`].
 ///
@@ -589,6 +670,27 @@ impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
 		D: serde::Deserializer<'de>,
 	{
 		<Box<dyn FnOnce<Args, Output = Output> + 'static>>::deserialize(deserializer).map(|x| x.0)
+	}
+}
+impl<Args: 'static, Output: 'static> serde::ser::Serialize
+	for boxed::Box<dyn FnOnce<Args, Output = Output> + Send + 'static>
+{
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(&self, serializer)
+	}
+}
+impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
+	for boxed::Box<dyn FnOnce<Args, Output = Output> + Send + 'static>
+{
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn FnOnce<Args, Output = Output> + Send + 'static>>::deserialize(deserializer)
+			.map(|x| x.0)
 	}
 }
 
@@ -618,6 +720,27 @@ impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
 		<Box<dyn FnMut<Args, Output = Output> + 'static>>::deserialize(deserializer).map(|x| x.0)
 	}
 }
+impl<Args: 'static, Output: 'static> serde::ser::Serialize
+	for boxed::Box<dyn FnMut<Args, Output = Output> + Send + 'static>
+{
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(&self, serializer)
+	}
+}
+impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
+	for boxed::Box<dyn FnMut<Args, Output = Output> + Send + 'static>
+{
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn FnMut<Args, Output = Output> + Send + 'static>>::deserialize(deserializer)
+			.map(|x| x.0)
+	}
+}
 
 /// A convenience trait implemented on all (de)serializable implementors of [`std::ops::Fn`].
 ///
@@ -643,5 +766,26 @@ impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
 		D: serde::Deserializer<'de>,
 	{
 		<Box<dyn Fn<Args, Output = Output> + 'static>>::deserialize(deserializer).map(|x| x.0)
+	}
+}
+impl<Args: 'static, Output: 'static> serde::ser::Serialize
+	for boxed::Box<dyn Fn<Args, Output = Output> + Send + 'static>
+{
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(&self, serializer)
+	}
+}
+impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
+	for boxed::Box<dyn Fn<Args, Output = Output> + Send + 'static>
+{
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn Fn<Args, Output = Output> + Send + 'static>>::deserialize(deserializer)
+			.map(|x| x.0)
 	}
 }
