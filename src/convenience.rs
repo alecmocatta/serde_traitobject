@@ -415,6 +415,23 @@ where
 	}
 }
 
+impl serde::ser::Serialize for boxed::Box<dyn Any + 'static> {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(&self, serializer)
+	}
+}
+impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Any + 'static> {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn Any + 'static>>::deserialize(deserializer).map(|x| x.0)
+	}
+}
+
 /// A convenience trait implemented on all (de)serializable implementors of [`std::error::Error`].
 ///
 /// It can be made into a trait object which is then (de)serializable.
