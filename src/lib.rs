@@ -98,7 +98,7 @@
 //!
 //! This crate currently requires Rust nightly.
 
-#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.1.6")]
+#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.1.7")]
 #![feature(
 	coerce_unsized,
 	core_intrinsics,
@@ -243,15 +243,10 @@ impl<T: serde::de::DeserializeOwned> Deserialize for [T] {}
 mod serialize {
 	use super::*;
 	pub trait Sealed: erased_serde::Serialize {
-		#[inline(always)]
 		fn serialize_sized<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 		where
 			S: serde::Serializer,
-			Self: Sized,
-		{
-			let _ = serializer;
-			unreachable!()
-		}
+			Self: Sized;
 		#[inline(always)]
 		fn type_id(&self) -> u64
 		where
@@ -260,7 +255,17 @@ mod serialize {
 			unsafe { intrinsics::type_id::<Self>() }
 		}
 	}
-	impl<T: serde::ser::Serialize + ?Sized> Sealed for T {}
+	impl<T: serde::ser::Serialize + ?Sized> Sealed for T {
+		#[inline(always)]
+		default fn serialize_sized<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+		where
+			S: serde::Serializer,
+			Self: Sized,
+		{
+			let _ = serializer;
+			unreachable!()
+		}
+	}
 	impl<T: serde::ser::Serialize> Sealed for T {
 		#[inline(always)]
 		fn serialize_sized<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
