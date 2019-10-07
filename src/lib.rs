@@ -247,11 +247,7 @@ mod serialize {
 		fn serialize_sized<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 		where
 			S: serde::Serializer,
-			Self: Sized,
-		{
-			let _ = serializer;
-			unreachable!()
-		}
+			Self: Sized;
 		#[inline(always)]
 		fn type_id(&self) -> u64
 		where
@@ -260,7 +256,17 @@ mod serialize {
 			unsafe { intrinsics::type_id::<Self>() }
 		}
 	}
-	impl<T: serde::ser::Serialize + ?Sized> Sealed for T {}
+	impl<T: serde::ser::Serialize + ?Sized> Sealed for T {
+		#[inline(always)]
+		default fn serialize_sized<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+		where
+			S: serde::Serializer,
+			Self: Sized,
+		{
+			let _ = serializer;
+			unreachable!()
+		}
+	}
 	impl<T: serde::ser::Serialize> Sealed for T {
 		#[inline(always)]
 		fn serialize_sized<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
