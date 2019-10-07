@@ -243,7 +243,6 @@ impl<T: serde::de::DeserializeOwned> Deserialize for [T] {}
 mod serialize {
 	use super::*;
 	pub trait Sealed: erased_serde::Serialize {
-		#[inline(always)]
 		fn serialize_sized<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 		where
 			S: serde::Serializer,
