@@ -100,6 +100,7 @@
 
 #![doc(html_root_url = "https://docs.rs/serde_traitobject/0.1.7")]
 #![feature(
+	arbitrary_self_types,
 	coerce_unsized,
 	core_intrinsics,
 	fn_traits,
@@ -283,7 +284,7 @@ mod deserialize {
 		/// Unsafe as it `ptr::write`s into `&mut self`, assuming it to be uninitialized
 		#[inline(always)]
 		unsafe fn deserialize_erased(
-			&mut self, deserializer: &mut dyn erased_serde::Deserializer,
+			self: *mut Self, deserializer: &mut dyn erased_serde::Deserializer,
 		) -> Result<(), erased_serde::Error> {
 			let _ = deserializer;
 			unreachable!()
@@ -308,7 +309,7 @@ mod deserialize {
 	impl<T: serde::de::DeserializeOwned> Sealed for T {
 		#[inline(always)]
 		unsafe fn deserialize_erased(
-			&mut self, deserializer: &mut dyn erased_serde::Deserializer,
+			self: *mut Self, deserializer: &mut dyn erased_serde::Deserializer,
 		) -> Result<(), erased_serde::Error> {
 			erased_serde::deserialize(deserializer).map(|x| ptr::write(self, x))
 		}
@@ -453,7 +454,7 @@ impl<T: Deserialize + ?Sized + 'static> DeserializerTrait<T> for Deserializer<T>
 				});
 				let t1: u64 = match seq.next_element()? {
 					Some(value) => value,
-					None => return Err(serde::de::Error::invalid_length(1, &self)),
+					None => return Err(serde::de::Error::invalid_length(1, &self)), // TODO: don't leak uninitialized box
 				};
 				assert_eq!(t1, object.type_id(), "Deserializing the trait object \"{}\" failed in a way that should never happen. Please file an issue! https://github.com/alecmocatta/serde_traitobject/issues/new", type_name::<T>());
 				let t2: boxed::Box<T> = match seq
@@ -477,11 +478,16 @@ impl<'de, T: Deserialize + ?Sized> serde::de::DeserializeSeed<'de> for Deseriali
 		D: serde::de::Deserializer<'de>,
 	{
 		let mut x = self.0;
-		unsafe {
-			(&mut *x).deserialize_erased(&mut erased_serde::Deserializer::erase(deserializer))
+		let x_ptr: *mut T = &mut *x;
+		match unsafe {
+			x_ptr.deserialize_erased(&mut erased_serde::Deserializer::erase(deserializer))
+		} {
+			Ok(()) => Ok(x),
+			Err(err) => {
+				mem::forget(x); // TODO: don't leak uninitialized box
+				Err(serde::de::Error::custom(err))
+			}
 		}
-		.map(|()| x)
-		.map_err(serde::de::Error::custom)
 	}
 }
 
