@@ -10,7 +10,6 @@
 //!
 //! ```
 //! # use serde_derive::{Serialize, Deserialize};
-//! # fn main() {
 //! trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
 //! 	fn my_method(&self);
 //! }
@@ -19,7 +18,6 @@
 //! struct Message(#[serde(with = "serde_traitobject")] Box<dyn MyTrait>);
 //!
 //! // Woohoo, `Message` is now serializable!
-//! # }
 //! ```
 //!
 //! And that's it! The two traits are automatically implemented for all `T: serde::Serialize` and all `T: serde::de::DeserializeOwned`, so as long as all implementors of your trait are themselves serializable then you're good to go.
@@ -36,7 +34,6 @@
 //!
 //! ```
 //! # use serde_derive::{Serialize, Deserialize};
-//! # fn main() {
 //! use std::any::Any;
 //! use serde_traitobject as s;
 //!
@@ -61,7 +58,6 @@
 //! println!("{:?}", downcast);
 //! # assert_eq!(format!("{:?}", downcast), "MyStruct { foo: \"abc\", bar: 123 }");
 //! // MyStruct { foo: "abc", bar: 123 }
-//! # }
 //! ```
 //!
 //! # Security
@@ -98,8 +94,9 @@
 //!
 //! This crate currently requires Rust nightly.
 
-#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.1.7")]
+#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.1.8")]
 #![feature(
+	arbitrary_self_types,
 	coerce_unsized,
 	core_intrinsics,
 	fn_traits,
@@ -138,18 +135,15 @@ pub use convenience::*;
 /// ```
 /// use serde_derive::{Serialize, Deserialize};
 ///
-/// # fn main() {
 /// trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
 /// 	fn my_method(&self);
 /// }
-/// # }
 /// ```
 ///
 /// Now your trait object is serializable!
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
 /// #
-/// # fn main() {
 /// # trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
 /// # 	fn my_method(&self);
 /// # }
@@ -157,13 +151,11 @@ pub use convenience::*;
 /// struct Message(#[serde(with = "serde_traitobject")] Box<dyn MyTrait>);
 ///
 /// // Woohoo, `Message` is now serializable!
-/// # }
 /// ```
 ///
 /// Any implementers of `MyTrait` would now have to themselves implement `serde::Serialize` and `serde::de::DeserializeOwned`. This would typically be through `serde_derive`, like:
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
-/// # fn main() {
 /// # trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
 /// # 	fn my_method(&self);
 /// # }
@@ -179,7 +171,6 @@ pub use convenience::*;
 /// 		println!("foo: {}", self.foo);
 /// 	}
 /// }
-/// # }
 /// ```
 pub trait Serialize: serialize::Sealed {}
 impl<T: serde::ser::Serialize + ?Sized> Serialize for T {}
@@ -192,18 +183,15 @@ impl<T: serde::ser::Serialize + ?Sized> Serialize for T {}
 /// ```
 /// use serde_derive::{Serialize, Deserialize};
 ///
-/// # fn main() {
 /// trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
 /// 	fn my_method(&self);
 /// }
-/// # }
 /// ```
 ///
 /// Now your trait object is serializable!
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
 /// #
-/// # fn main() {
 /// # trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
 /// # 	fn my_method(&self);
 /// # }
@@ -211,13 +199,11 @@ impl<T: serde::ser::Serialize + ?Sized> Serialize for T {}
 /// struct Message(#[serde(with = "serde_traitobject")] Box<dyn MyTrait>);
 ///
 /// // Woohoo, `Message` is now serializable!
-/// # }
 /// ```
 ///
 /// Any implementers of `MyTrait` would now have to themselves implement `serde::Serialize` and `serde::de::DeserializeOwned`. This would typically be through `serde_derive`, like:
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
-/// # fn main() {
 /// # trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
 /// # 	fn my_method(&self);
 /// # }
@@ -233,7 +219,6 @@ impl<T: serde::ser::Serialize + ?Sized> Serialize for T {}
 /// 		println!("foo: {}", self.foo);
 /// 	}
 /// }
-/// # }
 /// ```
 pub trait Deserialize: deserialize::Sealed {}
 impl<T: serde::de::DeserializeOwned> Deserialize for T {}
@@ -283,7 +268,7 @@ mod deserialize {
 		/// Unsafe as it `ptr::write`s into `&mut self`, assuming it to be uninitialized
 		#[inline(always)]
 		unsafe fn deserialize_erased(
-			&mut self, deserializer: &mut dyn erased_serde::Deserializer,
+			self: *mut Self, deserializer: &mut dyn erased_serde::Deserializer,
 		) -> Result<(), erased_serde::Error> {
 			let _ = deserializer;
 			unreachable!()
@@ -308,7 +293,7 @@ mod deserialize {
 	impl<T: serde::de::DeserializeOwned> Sealed for T {
 		#[inline(always)]
 		unsafe fn deserialize_erased(
-			&mut self, deserializer: &mut dyn erased_serde::Deserializer,
+			self: *mut Self, deserializer: &mut dyn erased_serde::Deserializer,
 		) -> Result<(), erased_serde::Error> {
 			erased_serde::deserialize(deserializer).map(|x| ptr::write(self, x))
 		}
@@ -453,7 +438,7 @@ impl<T: Deserialize + ?Sized + 'static> DeserializerTrait<T> for Deserializer<T>
 				});
 				let t1: u64 = match seq.next_element()? {
 					Some(value) => value,
-					None => return Err(serde::de::Error::invalid_length(1, &self)),
+					None => return Err(serde::de::Error::invalid_length(1, &self)), // TODO: don't leak uninitialized box
 				};
 				assert_eq!(t1, object.type_id(), "Deserializing the trait object \"{}\" failed in a way that should never happen. Please file an issue! https://github.com/alecmocatta/serde_traitobject/issues/new", type_name::<T>());
 				let t2: boxed::Box<T> = match seq
@@ -477,11 +462,16 @@ impl<'de, T: Deserialize + ?Sized> serde::de::DeserializeSeed<'de> for Deseriali
 		D: serde::de::Deserializer<'de>,
 	{
 		let mut x = self.0;
-		unsafe {
-			(&mut *x).deserialize_erased(&mut erased_serde::Deserializer::erase(deserializer))
+		let x_ptr: *mut T = &mut *x;
+		match unsafe {
+			x_ptr.deserialize_erased(&mut erased_serde::Deserializer::erase(deserializer))
+		} {
+			Ok(()) => Ok(x),
+			Err(err) => {
+				mem::forget(x); // TODO: don't leak uninitialized box
+				Err(serde::de::Error::custom(err))
+			}
 		}
-		.map(|()| x)
-		.map_err(serde::de::Error::custom)
 	}
 }
 
@@ -491,26 +481,22 @@ impl<'de, T: Deserialize + ?Sized> serde::de::DeserializeSeed<'de> for Deseriali
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
 ///
-/// # fn main() {
 /// #[derive(Serialize, Deserialize)]
 /// struct MyStruct {
 /// 	#[serde(with = "serde_traitobject")]
 /// 	field: Box<dyn serde_traitobject::Any>,
 /// }
-/// # }
 /// ```
 ///
 /// Or, alternatively, if only Serialize is desired:
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
 ///
-/// # fn main() {
 /// #[derive(Serialize)]
 /// struct MyStruct {
 /// 	#[serde(serialize_with = "serde_traitobject::serialize")]
 /// 	field: Box<dyn serde_traitobject::Any>,
 /// }
-/// # }
 /// ```
 pub fn serialize<T: Serialize + ?Sized + 'static, B: AsRef<T> + ?Sized, S>(
 	t: &B, serializer: S,
@@ -527,26 +513,22 @@ where
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
 ///
-/// # fn main() {
 /// #[derive(Serialize, Deserialize)]
 /// struct MyStruct {
 /// 	#[serde(with = "serde_traitobject")]
 /// 	field: Box<dyn serde_traitobject::Any>,
 /// }
-/// # }
 /// ```
 ///
 /// Or, alternatively, if only Deserialize is desired:
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
 ///
-/// # fn main() {
 /// #[derive(Deserialize)]
 /// struct MyStruct {
 /// 	#[serde(deserialize_with = "serde_traitobject::deserialize")]
 /// 	field: Box<dyn serde_traitobject::Any>,
 /// }
-/// # }
 /// ```
 pub fn deserialize<'de, T: Deserialize + ?Sized + 'static, B, D>(
 	deserializer: D,

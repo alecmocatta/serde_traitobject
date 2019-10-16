@@ -66,6 +66,7 @@ impl Hello for u8 {
 	}
 }
 
+#[allow(clippy::too_many_lines)]
 fn main() {
 	let test = |Abc {
 	                a,
