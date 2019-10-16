@@ -10,7 +10,6 @@
 //!
 //! ```
 //! # use serde_derive::{Serialize, Deserialize};
-//! # fn main() {
 //! trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
 //! 	fn my_method(&self);
 //! }
@@ -19,7 +18,6 @@
 //! struct Message(#[serde(with = "serde_traitobject")] Box<dyn MyTrait>);
 //!
 //! // Woohoo, `Message` is now serializable!
-//! # }
 //! ```
 //!
 //! And that's it! The two traits are automatically implemented for all `T: serde::Serialize` and all `T: serde::de::DeserializeOwned`, so as long as all implementors of your trait are themselves serializable then you're good to go.
@@ -36,7 +34,6 @@
 //!
 //! ```
 //! # use serde_derive::{Serialize, Deserialize};
-//! # fn main() {
 //! use std::any::Any;
 //! use serde_traitobject as s;
 //!
@@ -61,7 +58,6 @@
 //! println!("{:?}", downcast);
 //! # assert_eq!(format!("{:?}", downcast), "MyStruct { foo: \"abc\", bar: 123 }");
 //! // MyStruct { foo: "abc", bar: 123 }
-//! # }
 //! ```
 //!
 //! # Security
@@ -139,18 +135,15 @@ pub use convenience::*;
 /// ```
 /// use serde_derive::{Serialize, Deserialize};
 ///
-/// # fn main() {
 /// trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
 /// 	fn my_method(&self);
 /// }
-/// # }
 /// ```
 ///
 /// Now your trait object is serializable!
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
 /// #
-/// # fn main() {
 /// # trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
 /// # 	fn my_method(&self);
 /// # }
@@ -158,13 +151,11 @@ pub use convenience::*;
 /// struct Message(#[serde(with = "serde_traitobject")] Box<dyn MyTrait>);
 ///
 /// // Woohoo, `Message` is now serializable!
-/// # }
 /// ```
 ///
 /// Any implementers of `MyTrait` would now have to themselves implement `serde::Serialize` and `serde::de::DeserializeOwned`. This would typically be through `serde_derive`, like:
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
-/// # fn main() {
 /// # trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
 /// # 	fn my_method(&self);
 /// # }
@@ -180,7 +171,6 @@ pub use convenience::*;
 /// 		println!("foo: {}", self.foo);
 /// 	}
 /// }
-/// # }
 /// ```
 pub trait Serialize: serialize::Sealed {}
 impl<T: serde::ser::Serialize + ?Sized> Serialize for T {}
@@ -193,18 +183,15 @@ impl<T: serde::ser::Serialize + ?Sized> Serialize for T {}
 /// ```
 /// use serde_derive::{Serialize, Deserialize};
 ///
-/// # fn main() {
 /// trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
 /// 	fn my_method(&self);
 /// }
-/// # }
 /// ```
 ///
 /// Now your trait object is serializable!
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
 /// #
-/// # fn main() {
 /// # trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
 /// # 	fn my_method(&self);
 /// # }
@@ -212,13 +199,11 @@ impl<T: serde::ser::Serialize + ?Sized> Serialize for T {}
 /// struct Message(#[serde(with = "serde_traitobject")] Box<dyn MyTrait>);
 ///
 /// // Woohoo, `Message` is now serializable!
-/// # }
 /// ```
 ///
 /// Any implementers of `MyTrait` would now have to themselves implement `serde::Serialize` and `serde::de::DeserializeOwned`. This would typically be through `serde_derive`, like:
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
-/// # fn main() {
 /// # trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
 /// # 	fn my_method(&self);
 /// # }
@@ -234,7 +219,6 @@ impl<T: serde::ser::Serialize + ?Sized> Serialize for T {}
 /// 		println!("foo: {}", self.foo);
 /// 	}
 /// }
-/// # }
 /// ```
 pub trait Deserialize: deserialize::Sealed {}
 impl<T: serde::de::DeserializeOwned> Deserialize for T {}
@@ -497,26 +481,22 @@ impl<'de, T: Deserialize + ?Sized> serde::de::DeserializeSeed<'de> for Deseriali
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
 ///
-/// # fn main() {
 /// #[derive(Serialize, Deserialize)]
 /// struct MyStruct {
 /// 	#[serde(with = "serde_traitobject")]
 /// 	field: Box<dyn serde_traitobject::Any>,
 /// }
-/// # }
 /// ```
 ///
 /// Or, alternatively, if only Serialize is desired:
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
 ///
-/// # fn main() {
 /// #[derive(Serialize)]
 /// struct MyStruct {
 /// 	#[serde(serialize_with = "serde_traitobject::serialize")]
 /// 	field: Box<dyn serde_traitobject::Any>,
 /// }
-/// # }
 /// ```
 pub fn serialize<T: Serialize + ?Sized + 'static, B: AsRef<T> + ?Sized, S>(
 	t: &B, serializer: S,
@@ -533,26 +513,22 @@ where
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
 ///
-/// # fn main() {
 /// #[derive(Serialize, Deserialize)]
 /// struct MyStruct {
 /// 	#[serde(with = "serde_traitobject")]
 /// 	field: Box<dyn serde_traitobject::Any>,
 /// }
-/// # }
 /// ```
 ///
 /// Or, alternatively, if only Deserialize is desired:
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
 ///
-/// # fn main() {
 /// #[derive(Deserialize)]
 /// struct MyStruct {
 /// 	#[serde(deserialize_with = "serde_traitobject::deserialize")]
 /// 	field: Box<dyn serde_traitobject::Any>,
 /// }
-/// # }
 /// ```
 pub fn deserialize<'de, T: Deserialize + ?Sized + 'static, B, D>(
 	deserializer: D,
