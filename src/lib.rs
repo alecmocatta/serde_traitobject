@@ -76,7 +76,7 @@
 //!
 //! At some point in Rust's future, I think it would be great if the latter could be used to safely look up and create a trait object. As it is, that functionality doesn't exist yet, so what this crate does instead is serialize the vtable pointer (relative to a static base), and do as much validity checking as it reasonably can before it can be used and potentially invoke UB.
 //!
-//! The first two are [checked for validity](https://github.com/alecmocatta/relative/blob/dae206663a09b9c0c4b3012c528b0e9c063df742/src/lib.rs#L457-L474) before usage of the vtable pointer. The `build_id` ensures that the vtable pointer came from an invocation of an identically laid out binary<sup>1</sup>. The `type_id` ensures that the trait object being deserialized is the same type as the trait object that was serialized. They ensure that under non-malicious conditions, attempts to deserialize invalid data return an error rather than UB. The `type_id` of the concrete type is used as a [sanity check](https://github.com/alecmocatta/serde_traitobject/blob/50918f588ac7b1efc113de55bdf70bdae3d50554/src/lib.rs#L464) that panics if it differs from the `type_id` of the concrete type to be deserialized.
+//! The first two are [checked for validity](https://github.com/alecmocatta/relative/blob/dae206663a09b9c0c4b3012c528b0e9c063df742/src/lib.rs#L457-L474) before usage of the vtable pointer. The `build_id` ensures that the vtable pointer came from an invocation of an identically laid out binary<sup>1</sup>. The `type_id` ensures that the trait object being deserialized is the same type as the trait object that was serialized. They ensure that under non-malicious conditions, attempts to deserialize invalid data return an error rather than UB. The `type_id` of the concrete type is used as a [sanity check](https://github.com/alecmocatta/serde_traitobject/blob/b20d74e183063e7d49aff2eabc9dcd5bc26d7c07/src/lib.rs#L469) that panics if it differs from the `type_id` of the concrete type to be deserialized.
 //!
 //! Regarding collisions, the 128 bit `build_id` colliding is sufficiently unlikely that it can be relied upon to never occur. The 64 bit `type_id` colliding is possible, see [rust-lang/rust#10389](https://github.com/rust-lang/rust/issues/10389), though exceedingly unlikely to occur in practise.
 //!
@@ -94,7 +94,7 @@
 //!
 //! This crate currently requires Rust nightly.
 
-#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.1.8")]
+#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.2.0")]
 #![feature(
 	arbitrary_self_types,
 	coerce_unsized,

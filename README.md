@@ -4,7 +4,7 @@
 [![MIT / Apache 2.0 licensed](https://img.shields.io/crates/l/serde_traitobject.svg?maxAge=2592000)](#License)
 [![Build Status](https://dev.azure.com/alecmocatta/serde_traitobject/_apis/build/status/tests?branchName=master)](https://dev.azure.com/alecmocatta/serde_traitobject/_build/latest?branchName=master)
 
-[Docs](https://docs.rs/serde_traitobject/0.1.8/serde_traitobject/)
+[Docs](https://docs.rs/serde_traitobject/0.2.0/serde_traitobject/)
 
 **Serializable and deserializable trait objects.**
 
@@ -12,7 +12,7 @@ This library enables the serialization and deserialization of trait objects so t
 
 For example, if you have multiple forks of a process, or the same binary running on each of a cluster of machines, this library lets you send trait objects between them.
 
-Any trait can be made (de)serializable when made into a trait object by adding this crate's [Serialize](https://docs.rs/serde_traitobject/0.1.8/serde_traitobject/trait.Serialize.html) and [Deserialize](https://docs.rs/serde_traitobject/0.1.8/serde_traitobject/trait.Deserialize.html) traits as supertraits:
+Any trait can be made (de)serializable when made into a trait object by adding this crate's [Serialize](https://docs.rs/serde_traitobject/0.2.0/serde_traitobject/trait.Serialize.html) and [Deserialize](https://docs.rs/serde_traitobject/0.2.0/serde_traitobject/trait.Deserialize.html) traits as supertraits:
 
 ```rust
 trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
@@ -28,12 +28,12 @@ struct Message(#[serde(with = "serde_traitobject")] Box<dyn MyTrait>);
 And that's it! The two traits are automatically implemented for all `T: serde::Serialize` and all `T: serde::de::DeserializeOwned`, so as long as all implementors of your trait are themselves serializable then you're good to go.
 
 There are two ways to (de)serialize your trait object:
- * Apply the `#[serde(with = "serde_traitobject")]` [field attribute](https://serde.rs/attributes.html), which instructs serde to use this crate's [serialize](https://docs.rs/serde_traitobject/0.1.8/serde_traitobject/fn.serialize.html) and [deserialize](https://docs.rs/serde_traitobject/0.1.8/serde_traitobject/fn.deserialize.html) functions;
- * The [Box](https://docs.rs/serde_traitobject/0.1.8/serde_traitobject/struct.Box.html), [Rc](https://docs.rs/serde_traitobject/0.1.8/serde_traitobject/struct.Rc.html) and [Arc](https://docs.rs/serde_traitobject/0.1.8/serde_traitobject/struct.Arc.html) structs, which are simple wrappers around their stdlib counterparts that automatically handle (de)serialization without needing the above annotation;
+ * Apply the `#[serde(with = "serde_traitobject")]` [field attribute](https://serde.rs/attributes.html), which instructs serde to use this crate's [serialize](https://docs.rs/serde_traitobject/0.2.0/serde_traitobject/fn.serialize.html) and [deserialize](https://docs.rs/serde_traitobject/0.2.0/serde_traitobject/fn.deserialize.html) functions;
+ * The [Box](https://docs.rs/serde_traitobject/0.2.0/serde_traitobject/struct.Box.html), [Rc](https://docs.rs/serde_traitobject/0.2.0/serde_traitobject/struct.Rc.html) and [Arc](https://docs.rs/serde_traitobject/0.2.0/serde_traitobject/struct.Arc.html) structs, which are simple wrappers around their stdlib counterparts that automatically handle (de)serialization without needing the above annotation;
 
 Additionally, there are several convenience traits implemented that extend their stdlib counterparts:
 
- * [Any](https://docs.rs/serde_traitobject/0.1.8/serde_traitobject/trait.Any.html), [Debug](https://docs.rs/serde_traitobject/0.1.8/serde_traitobject/trait.Debug.html), [Display](https://docs.rs/serde_traitobject/0.1.8/serde_traitobject/trait.Display.html), [Error](https://docs.rs/serde_traitobject/0.1.8/serde_traitobject/trait.Error.html), [Fn](https://docs.rs/serde_traitobject/0.1.8/serde_traitobject/trait.Fn.html), [FnMut](https://docs.rs/serde_traitobject/0.1.8/serde_traitobject/trait.FnMut.html), [FnOnce](https://docs.rs/serde_traitobject/0.1.8/serde_traitobject/trait.FnOnce.html)
+ * [Any](https://docs.rs/serde_traitobject/0.2.0/serde_traitobject/trait.Any.html), [Debug](https://docs.rs/serde_traitobject/0.2.0/serde_traitobject/trait.Debug.html), [Display](https://docs.rs/serde_traitobject/0.2.0/serde_traitobject/trait.Display.html), [Error](https://docs.rs/serde_traitobject/0.2.0/serde_traitobject/trait.Error.html), [Fn](https://docs.rs/serde_traitobject/0.2.0/serde_traitobject/trait.Fn.html), [FnMut](https://docs.rs/serde_traitobject/0.2.0/serde_traitobject/trait.FnMut.html), [FnOnce](https://docs.rs/serde_traitobject/0.2.0/serde_traitobject/trait.FnOnce.html)
 
 These are automatically implemented on all implementors of their stdlib counterparts that also implement `serde::Serialize` and `serde::de::DeserializeOwned`.
 
@@ -79,7 +79,7 @@ Three things are serialized alongside the vtable pointer for the purpose of vali
 
 At some point in Rust's future, I think it would be great if the latter could be used to safely look up and create a trait object. As it is, that functionality doesn't exist yet, so what this crate does instead is serialize the vtable pointer (relative to a static base), and do as much validity checking as it reasonably can before it can be used and potentially invoke UB.
 
-The first two are [checked for validity](https://github.com/alecmocatta/relative/blob/dae206663a09b9c0c4b3012c528b0e9c063df742/src/lib.rs#L457-L474) before usage of the vtable pointer. The `build_id` ensures that the vtable pointer came from an invocation of an identically laid out binary<sup>1</sup>. The `type_id` ensures that the trait object being deserialized is the same type as the trait object that was serialized. They ensure that under non-malicious conditions, attempts to deserialize invalid data return an error rather than UB. The `type_id` of the concrete type is used as a [sanity check](https://github.com/alecmocatta/serde_traitobject/blob/50918f588ac7b1efc113de55bdf70bdae3d50554/src/lib.rs#L464) that panics if it differs from the `type_id` of the concrete type to be deserialized.
+The first two are [checked for validity](https://github.com/alecmocatta/relative/blob/dae206663a09b9c0c4b3012c528b0e9c063df742/src/lib.rs#L457-L474) before usage of the vtable pointer. The `build_id` ensures that the vtable pointer came from an invocation of an identically laid out binary<sup>1</sup>. The `type_id` ensures that the trait object being deserialized is the same type as the trait object that was serialized. They ensure that under non-malicious conditions, attempts to deserialize invalid data return an error rather than UB. The `type_id` of the concrete type is used as a [sanity check](https://github.com/alecmocatta/serde_traitobject/blob/b20d74e183063e7d49aff2eabc9dcd5bc26d7c07/src/lib.rs#L469) that panics if it differs from the `type_id` of the concrete type to be deserialized.
 
 Regarding collisions, the 128 bit `build_id` colliding is sufficiently unlikely that it can be relied upon to never occur. The 64 bit `type_id` colliding is possible, see [rust-lang/rust#10389](https://github.com/rust-lang/rust/issues/10389), though exceedingly unlikely to occur in practise.
 
