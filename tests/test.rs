@@ -15,16 +15,16 @@
 use serde_closure::Fn;
 use serde_derive::{Deserialize, Serialize};
 use serde_traitobject::{Deserialize, Serialize};
-use std::{any, env, fmt, process, rc};
+use std::{any, env, process, rc};
 
 #[derive(Serialize, Deserialize)]
 struct Abc {
 	#[serde(with = "serde_traitobject")]
-	a: rc::Rc<dyn HelloSerializeBox>,
-	b: serde_traitobject::Rc<dyn HelloSerializeBox>,
+	a: rc::Rc<dyn HelloSerialize>,
+	b: serde_traitobject::Rc<dyn HelloSerialize>,
 	#[serde(with = "serde_traitobject")]
-	c: Box<dyn HelloSerializeBox>,
-	d: serde_traitobject::Box<dyn HelloSerializeBox>,
+	c: Box<dyn HelloSerialize>,
+	d: serde_traitobject::Box<dyn HelloSerialize>,
 	#[serde(with = "serde_traitobject")]
 	e: Box<dyn serde_traitobject::Any>,
 	f: serde_traitobject::Box<dyn serde_traitobject::Any>,
@@ -42,11 +42,18 @@ struct Abc {
 	o: Box<[u16]>,
 }
 
+#[derive(Serialize)]
+struct Def<'a> {
+	a: &'a (dyn serde_traitobject::FnOnce<(), Output = ()> + 'static),
+	c: &'a mut (dyn serde_traitobject::FnOnce<(), Output = ()> + 'static),
+}
+
 trait Hello {
 	fn hi(&self) -> String;
 }
-trait HelloSerializeBox: Hello + Serialize + Deserialize + fmt::Debug {}
-impl<T> HelloSerializeBox for T where T: Hello + Serialize + Deserialize + fmt::Debug {}
+trait HelloSerialize: Hello + Serialize + Deserialize {}
+impl<T> HelloSerialize for T where T: Hello + Serialize + Deserialize {}
+
 #[allow(clippy::use_self)]
 impl Hello for u32 {
 	fn hi(&self) -> String {
@@ -63,6 +70,20 @@ impl Hello for u16 {
 impl Hello for u8 {
 	fn hi(&self) -> String {
 		format!("hi u8! {:?}", self)
+	}
+}
+
+#[derive(Serialize)]
+struct Ghi<'a> {
+	#[serde(with = "serde_traitobject")]
+	e: &'a (dyn Hello2Serialize + 'static),
+}
+trait Hello2 {}
+trait Hello2Serialize: Hello2 + Serialize + Deserialize {}
+impl<T> Hello2Serialize for T where T: Hello2 + Serialize + Deserialize {}
+impl<'a> AsRef<dyn Hello2Serialize + 'a> for dyn Hello2Serialize {
+	fn as_ref(&self) -> &(dyn Hello2Serialize + 'a) {
+		self
 	}
 }
 

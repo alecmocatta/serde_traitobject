@@ -415,12 +415,23 @@ where
 	}
 }
 
-impl serde::ser::Serialize for boxed::Box<dyn Any + 'static> {
+impl<'a> AsRef<Self> for dyn Any + 'a {
+	fn as_ref(&self) -> &Self {
+		self
+	}
+}
+impl<'a> AsRef<Self> for dyn Any + Send + 'a {
+	fn as_ref(&self) -> &Self {
+		self
+	}
+}
+
+impl serde::ser::Serialize for dyn Any {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
 	{
-		serialize(&self, serializer)
+		serialize(self, serializer)
 	}
 }
 impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Any + 'static> {
@@ -431,12 +442,12 @@ impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Any + 'static> {
 		<Box<dyn Any + 'static>>::deserialize(deserializer).map(|x| x.0)
 	}
 }
-impl serde::ser::Serialize for boxed::Box<dyn Any + Send + 'static> {
+impl serde::ser::Serialize for dyn Any + Send {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
 	{
-		serialize(&self, serializer)
+		serialize(self, serializer)
 	}
 }
 impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Any + Send + 'static> {
@@ -484,6 +495,17 @@ impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Any + Send + 'static> {
 pub trait Error: error::Error + Serialize + Deserialize {}
 impl<T: ?Sized> Error for T where T: error::Error + Serialize + Deserialize {}
 
+impl<'a> AsRef<Self> for dyn Error + 'a {
+	fn as_ref(&self) -> &Self {
+		self
+	}
+}
+impl<'a> AsRef<Self> for dyn Error + Send + 'a {
+	fn as_ref(&self) -> &Self {
+		self
+	}
+}
+
 #[allow(clippy::use_self)]
 impl<'a, E: error::Error + Serialize + Deserialize + 'a> From<E> for Box<dyn Error + 'a> {
 	fn from(err: E) -> Self {
@@ -497,12 +519,12 @@ impl<'a, E: error::Error + Serialize + Deserialize + 'a> From<E> for boxed::Box<
 	}
 }
 
-impl serde::ser::Serialize for boxed::Box<dyn Error + 'static> {
+impl serde::ser::Serialize for dyn Error {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
 	{
-		serialize(&self, serializer)
+		serialize(self, serializer)
 	}
 }
 impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Error + 'static> {
@@ -513,12 +535,12 @@ impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Error + 'static> {
 		<Box<dyn Error + 'static>>::deserialize(deserializer).map(|x| x.0)
 	}
 }
-impl serde::ser::Serialize for boxed::Box<dyn Error + Send + 'static> {
+impl serde::ser::Serialize for dyn Error + Send {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
 	{
-		serialize(&self, serializer)
+		serialize(self, serializer)
 	}
 }
 impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Error + Send + 'static> {
@@ -555,12 +577,23 @@ impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Error + Send + 'static>
 pub trait Display: fmt::Display + Serialize + Deserialize {}
 impl<T: ?Sized> Display for T where T: fmt::Display + Serialize + Deserialize {}
 
-impl serde::ser::Serialize for boxed::Box<dyn Display + 'static> {
+impl<'a> AsRef<Self> for dyn Display + 'a {
+	fn as_ref(&self) -> &Self {
+		self
+	}
+}
+impl<'a> AsRef<Self> for dyn Display + Send + 'a {
+	fn as_ref(&self) -> &Self {
+		self
+	}
+}
+
+impl serde::ser::Serialize for dyn Display {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
 	{
-		serialize(&self, serializer)
+		serialize(self, serializer)
 	}
 }
 impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Display + 'static> {
@@ -571,12 +604,12 @@ impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Display + 'static> {
 		<Box<dyn Display + 'static>>::deserialize(deserializer).map(|x| x.0)
 	}
 }
-impl serde::ser::Serialize for boxed::Box<dyn Display + Send + 'static> {
+impl serde::ser::Serialize for dyn Display + Send {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
 	{
-		serialize(&self, serializer)
+		serialize(self, serializer)
 	}
 }
 impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Display + Send + 'static> {
@@ -613,12 +646,23 @@ impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Display + Send + 'stati
 pub trait Debug: fmt::Debug + Serialize + Deserialize {}
 impl<T: ?Sized> Debug for T where T: fmt::Debug + Serialize + Deserialize {}
 
-impl serde::ser::Serialize for boxed::Box<dyn Debug + 'static> {
+impl<'a> AsRef<Self> for dyn Debug + 'a {
+	fn as_ref(&self) -> &Self {
+		self
+	}
+}
+impl<'a> AsRef<Self> for dyn Debug + Send + 'a {
+	fn as_ref(&self) -> &Self {
+		self
+	}
+}
+
+impl serde::ser::Serialize for dyn Debug {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
 	{
-		serialize(&self, serializer)
+		serialize(self, serializer)
 	}
 }
 impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Debug + 'static> {
@@ -629,12 +673,12 @@ impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Debug + 'static> {
 		<Box<dyn Debug + 'static>>::deserialize(deserializer).map(|x| x.0)
 	}
 }
-impl serde::ser::Serialize for boxed::Box<dyn Debug + Send + 'static> {
+impl serde::ser::Serialize for dyn Debug + Send {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
 	{
-		serialize(&self, serializer)
+		serialize(self, serializer)
 	}
 }
 impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Debug + Send + 'static> {
@@ -652,14 +696,23 @@ impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Debug + Send + 'static>
 pub trait FnOnce<Args>: ops::FnOnce<Args> + Serialize + Deserialize {}
 impl<T: ?Sized, Args> FnOnce<Args> for T where T: ops::FnOnce<Args> + Serialize + Deserialize {}
 
-impl<Args: 'static, Output: 'static> serde::ser::Serialize
-	for boxed::Box<dyn FnOnce<Args, Output = Output> + 'static>
-{
+impl<'a, Args, Output> AsRef<Self> for dyn FnOnce<Args, Output = Output> + 'a {
+	fn as_ref(&self) -> &Self {
+		self
+	}
+}
+impl<'a, Args, Output> AsRef<Self> for dyn FnOnce<Args, Output = Output> + Send + 'a {
+	fn as_ref(&self) -> &Self {
+		self
+	}
+}
+
+impl<Args: 'static, Output: 'static> serde::ser::Serialize for dyn FnOnce<Args, Output = Output> {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
 	{
-		serialize(&self, serializer)
+		serialize(self, serializer)
 	}
 }
 impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
@@ -673,13 +726,13 @@ impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
 	}
 }
 impl<Args: 'static, Output: 'static> serde::ser::Serialize
-	for boxed::Box<dyn FnOnce<Args, Output = Output> + Send + 'static>
+	for dyn FnOnce<Args, Output = Output> + Send
 {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
 	{
-		serialize(&self, serializer)
+		serialize(self, serializer)
 	}
 }
 impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
@@ -700,14 +753,23 @@ impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
 pub trait FnMut<Args>: ops::FnMut<Args> + Serialize + Deserialize {}
 impl<T: ?Sized, Args> FnMut<Args> for T where T: ops::FnMut<Args> + Serialize + Deserialize {}
 
-impl<Args: 'static, Output: 'static> serde::ser::Serialize
-	for boxed::Box<dyn FnMut<Args, Output = Output> + 'static>
-{
+impl<'a, Args, Output> AsRef<Self> for dyn FnMut<Args, Output = Output> + 'a {
+	fn as_ref(&self) -> &Self {
+		self
+	}
+}
+impl<'a, Args, Output> AsRef<Self> for dyn FnMut<Args, Output = Output> + Send + 'a {
+	fn as_ref(&self) -> &Self {
+		self
+	}
+}
+
+impl<Args: 'static, Output: 'static> serde::ser::Serialize for dyn FnMut<Args, Output = Output> {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
 	{
-		serialize(&self, serializer)
+		serialize(self, serializer)
 	}
 }
 impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
@@ -721,13 +783,13 @@ impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
 	}
 }
 impl<Args: 'static, Output: 'static> serde::ser::Serialize
-	for boxed::Box<dyn FnMut<Args, Output = Output> + Send + 'static>
+	for dyn FnMut<Args, Output = Output> + Send
 {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
 	{
-		serialize(&self, serializer)
+		serialize(self, serializer)
 	}
 }
 impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
@@ -748,14 +810,23 @@ impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
 pub trait Fn<Args>: ops::Fn<Args> + Serialize + Deserialize {}
 impl<T: ?Sized, Args> Fn<Args> for T where T: ops::Fn<Args> + Serialize + Deserialize {}
 
-impl<Args: 'static, Output: 'static> serde::ser::Serialize
-	for boxed::Box<dyn Fn<Args, Output = Output> + 'static>
-{
+impl<'a, Args, Output> AsRef<Self> for dyn Fn<Args, Output = Output> + 'a {
+	fn as_ref(&self) -> &Self {
+		self
+	}
+}
+impl<'a, Args, Output> AsRef<Self> for dyn Fn<Args, Output = Output> + Send + 'a {
+	fn as_ref(&self) -> &Self {
+		self
+	}
+}
+
+impl<Args: 'static, Output: 'static> serde::ser::Serialize for dyn Fn<Args, Output = Output> {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
 	{
-		serialize(&self, serializer)
+		serialize(self, serializer)
 	}
 }
 impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
@@ -769,13 +840,13 @@ impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
 	}
 }
 impl<Args: 'static, Output: 'static> serde::ser::Serialize
-	for boxed::Box<dyn Fn<Args, Output = Output> + Send + 'static>
+	for dyn Fn<Args, Output = Output> + Send
 {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
 	{
-		serialize(&self, serializer)
+		serialize(self, serializer)
 	}
 }
 impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
