@@ -114,7 +114,7 @@
 	unused_results,
 	clippy::pedantic
 )] // from https://github.com/rust-unofficial/patterns/blob/master/anti_patterns/deny-warnings.md
-#![allow(where_clauses_object_safety)]
+#![allow(where_clauses_object_safety, clippy::must_use_candidate)]
 
 mod convenience;
 
@@ -299,7 +299,7 @@ mod deserialize {
 		fn deserialize_erased(
 			self: *const Self, deserializer: &mut dyn erased_serde::Deserializer,
 		) -> Result<NonNull<()>, erased_serde::Error> {
-			erased_serde::deserialize::<T>(deserializer)
+			erased_serde::deserialize::<Self>(deserializer)
 				.map(|x| NonNull::new(boxed::Box::into_raw(boxed::Box::new(x)).cast()).unwrap())
 		}
 
@@ -319,8 +319,9 @@ mod deserialize {
 	/// Rust currently doesn't support returning Self traitobjects from
 	/// traitobject methods. Work around that by returning a thin pointer and
 	/// fattening it.
+	#[allow(clippy::module_name_repetitions)]
 	#[inline]
-	pub fn deserialize_erased<'de, T: ?Sized>(
+	pub fn deserialize_erased<T: ?Sized>(
 		self_: *const T, deserializer: &mut dyn erased_serde::Deserializer,
 	) -> Result<boxed::Box<T>, erased_serde::Error>
 	where
