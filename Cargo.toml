@@ -23,7 +23,7 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 serde = "1.0"
 erased-serde = "0.3"
-metatype = "0.1.1"
+metatype = "0.2"
 relative = "0.1.2"
 
 [dev-dependencies]
