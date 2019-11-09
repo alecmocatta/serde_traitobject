@@ -114,7 +114,7 @@
 	unused_results,
 	clippy::pedantic
 )] // from https://github.com/rust-unofficial/patterns/blob/master/anti_patterns/deny-warnings.md
-#![allow(where_clauses_object_safety, clippy::must_use_candidate)]
+#![allow(clippy::must_use_candidate)]
 
 mod convenience;
 

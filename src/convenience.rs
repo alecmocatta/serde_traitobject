@@ -25,22 +25,31 @@ impl Box<dyn Any> {
 		self.0.into_any()
 	}
 }
+#[allow(clippy::use_self)]
 impl Box<dyn Any + Send> {
 	/// Convert into a `std::boxed::Box<dyn std::any::Any + Send>`.
 	pub fn into_any_send(self) -> boxed::Box<dyn any::Any + Send> {
-		self.0.into_any_send()
+		unsafe {
+			boxed::Box::from_raw(boxed::Box::into_raw(<Box<dyn Any>>::into_any(self)) as *mut _)
+		}
 	}
 }
+#[allow(clippy::use_self)]
 impl Box<dyn Any + Sync> {
 	/// Convert into a `std::boxed::Box<dyn std::any::Any + Sync>`.
 	pub fn into_any_sync(self) -> boxed::Box<dyn any::Any + Sync> {
-		self.0.into_any_sync()
+		unsafe {
+			boxed::Box::from_raw(boxed::Box::into_raw(<Box<dyn Any>>::into_any(self)) as *mut _)
+		}
 	}
 }
+#[allow(clippy::use_self)]
 impl Box<dyn Any + Send + Sync> {
 	/// Convert into a `std::boxed::Box<dyn std::any::Any + Send + Sync>`.
 	pub fn into_any_send_sync(self) -> boxed::Box<dyn any::Any + Send + Sync> {
-		self.0.into_any_send_sync()
+		unsafe {
+			boxed::Box::from_raw(boxed::Box::into_raw(<Box<dyn Any>>::into_any(self)) as *mut _)
+		}
 	}
 }
 impl<T: ?Sized + marker::Unsize<U>, U: ?Sized> ops::CoerceUnsized<Box<U>> for Box<T> {}
@@ -369,18 +378,6 @@ pub trait Any: any::Any + Serialize + Deserialize {
 	fn as_any_mut(&mut self) -> &mut dyn any::Any;
 	/// Convert to a `std::boxed::Box<dyn std::any::Any>`.
 	fn into_any(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any>;
-	/// Convert to a `std::boxed::Box<dyn std::any::Any + Send>`.
-	fn into_any_send(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any + Send>
-	where
-		Self: Send;
-	/// Convert to a `std::boxed::Box<dyn std::any::Any + Sync>`.
-	fn into_any_sync(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any + Sync>
-	where
-		Self: Sync;
-	/// Convert to a `std::boxed::Box<dyn std::any::Any + Send + Sync>`.
-	fn into_any_send_sync(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any + Send + Sync>
-	where
-		Self: Send + Sync;
 }
 impl<T> Any for T
 where
@@ -395,32 +392,14 @@ where
 	fn into_any(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any> {
 		self
 	}
-	fn into_any_send(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any + Send>
-	where
-		Self: Send,
-	{
-		self
-	}
-	fn into_any_sync(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any + Sync>
-	where
-		Self: Sync,
-	{
-		self
-	}
-	fn into_any_send_sync(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any + Send + Sync>
-	where
-		Self: Send + Sync,
-	{
-		self
-	}
 }
 
-impl<'a> AsRef<Self> for dyn Any + 'a {
+impl AsRef<Self> for dyn Any {
 	fn as_ref(&self) -> &Self {
 		self
 	}
 }
-impl<'a> AsRef<Self> for dyn Any + Send + 'a {
+impl AsRef<Self> for dyn Any + Send {
 	fn as_ref(&self) -> &Self {
 		self
 	}

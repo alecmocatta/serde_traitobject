@@ -10,7 +10,7 @@
 	unused_results,
 	clippy::pedantic
 )] // from https://github.com/rust-unofficial/patterns/blob/master/anti_patterns/deny-warnings.md
-#![allow(where_clauses_object_safety, clippy::unseparated_literal_suffix)]
+#![allow(clippy::unseparated_literal_suffix)]
 
 use serde_closure::Fn;
 use serde_derive::{Deserialize, Serialize};
