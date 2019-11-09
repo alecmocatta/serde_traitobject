@@ -4,7 +4,7 @@
 [![MIT / Apache 2.0 licensed](https://img.shields.io/crates/l/serde_traitobject.svg?maxAge=2592000)](#License)
 [![Build Status](https://dev.azure.com/alecmocatta/serde_traitobject/_apis/build/status/tests?branchName=master)](https://dev.azure.com/alecmocatta/serde_traitobject/_build/latest?branchName=master)
 
-[Docs](https://docs.rs/serde_traitobject/0.2.2/serde_traitobject/)
+[Docs](https://docs.rs/serde_traitobject/0.2.3/serde_traitobject/)
 
 **Serializable and deserializable trait objects.**
 
@@ -12,7 +12,7 @@ This library enables the serialization and deserialization of trait objects so t
 
 For example, if you have multiple forks of a process, or the same binary running on each of a cluster of machines, this library lets you send trait objects between them.
 
-Any trait can be made (de)serializable when made into a trait object by adding this crate's [Serialize](https://docs.rs/serde_traitobject/0.2.2/serde_traitobject/trait.Serialize.html) and [Deserialize](https://docs.rs/serde_traitobject/0.2.2/serde_traitobject/trait.Deserialize.html) traits as supertraits:
+Any trait can be made (de)serializable when made into a trait object by adding this crate's [Serialize](https://docs.rs/serde_traitobject/0.2.3/serde_traitobject/trait.Serialize.html) and [Deserialize](https://docs.rs/serde_traitobject/0.2.3/serde_traitobject/trait.Deserialize.html) traits as supertraits:
 
 ```rust
 trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
@@ -28,12 +28,12 @@ struct Message(#[serde(with = "serde_traitobject")] Box<dyn MyTrait>);
 And that's it! The two traits are automatically implemented for all `T: serde::Serialize` and all `T: serde::de::DeserializeOwned`, so as long as all implementors of your trait are themselves serializable then you're good to go.
 
 There are two ways to (de)serialize your trait object:
- * Apply the `#[serde(with = "serde_traitobject")]` [field attribute](https://serde.rs/attributes.html), which instructs serde to use this crate's [serialize](https://docs.rs/serde_traitobject/0.2.2/serde_traitobject/fn.serialize.html) and [deserialize](https://docs.rs/serde_traitobject/0.2.2/serde_traitobject/fn.deserialize.html) functions;
- * The [Box](https://docs.rs/serde_traitobject/0.2.2/serde_traitobject/struct.Box.html), [Rc](https://docs.rs/serde_traitobject/0.2.2/serde_traitobject/struct.Rc.html) and [Arc](https://docs.rs/serde_traitobject/0.2.2/serde_traitobject/struct.Arc.html) structs, which are simple wrappers around their stdlib counterparts that automatically handle (de)serialization without needing the above annotation;
+ * Apply the `#[serde(with = "serde_traitobject")]` [field attribute](https://serde.rs/attributes.html), which instructs serde to use this crate's [serialize](https://docs.rs/serde_traitobject/0.2.3/serde_traitobject/fn.serialize.html) and [deserialize](https://docs.rs/serde_traitobject/0.2.3/serde_traitobject/fn.deserialize.html) functions;
+ * The [Box](https://docs.rs/serde_traitobject/0.2.3/serde_traitobject/struct.Box.html), [Rc](https://docs.rs/serde_traitobject/0.2.3/serde_traitobject/struct.Rc.html) and [Arc](https://docs.rs/serde_traitobject/0.2.3/serde_traitobject/struct.Arc.html) structs, which are simple wrappers around their stdlib counterparts that automatically handle (de)serialization without needing the above annotation;
 
 Additionally, there are several convenience traits implemented that extend their stdlib counterparts:
 
- * [Any](https://docs.rs/serde_traitobject/0.2.2/serde_traitobject/trait.Any.html), [Debug](https://docs.rs/serde_traitobject/0.2.2/serde_traitobject/trait.Debug.html), [Display](https://docs.rs/serde_traitobject/0.2.2/serde_traitobject/trait.Display.html), [Error](https://docs.rs/serde_traitobject/0.2.2/serde_traitobject/trait.Error.html), [Fn](https://docs.rs/serde_traitobject/0.2.2/serde_traitobject/trait.Fn.html), [FnMut](https://docs.rs/serde_traitobject/0.2.2/serde_traitobject/trait.FnMut.html), [FnOnce](https://docs.rs/serde_traitobject/0.2.2/serde_traitobject/trait.FnOnce.html)
+ * [Any](https://docs.rs/serde_traitobject/0.2.3/serde_traitobject/trait.Any.html), [Debug](https://docs.rs/serde_traitobject/0.2.3/serde_traitobject/trait.Debug.html), [Display](https://docs.rs/serde_traitobject/0.2.3/serde_traitobject/trait.Display.html), [Error](https://docs.rs/serde_traitobject/0.2.3/serde_traitobject/trait.Error.html), [Fn](https://docs.rs/serde_traitobject/0.2.3/serde_traitobject/trait.Fn.html), [FnMut](https://docs.rs/serde_traitobject/0.2.3/serde_traitobject/trait.FnMut.html), [FnOnce](https://docs.rs/serde_traitobject/0.2.3/serde_traitobject/trait.FnOnce.html)
 
 These are automatically implemented on all implementors of their stdlib counterparts that also implement `serde::Serialize` and `serde::de::DeserializeOwned`.
 

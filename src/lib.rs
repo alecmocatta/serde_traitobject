@@ -94,7 +94,7 @@
 //!
 //! This crate currently requires Rust nightly.
 
-#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.2.2")]
+#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.2.3")]
 #![feature(
 	arbitrary_self_types,
 	coerce_unsized,
@@ -114,7 +114,7 @@
 	unused_results,
 	clippy::pedantic
 )] // from https://github.com/rust-unofficial/patterns/blob/master/anti_patterns/deny-warnings.md
-#![allow(where_clauses_object_safety, clippy::must_use_candidate)]
+#![allow(clippy::must_use_candidate)]
 
 mod convenience;
 
