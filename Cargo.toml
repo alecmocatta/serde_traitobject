@@ -1,6 +1,6 @@
 [package]
 name = "serde_traitobject"
-version = "0.2.3"
+version = "0.2.4"
 license = "MIT OR Apache-2.0"
 authors = ["Alec Mocatta <alec@mocatta.net>"]
 categories = ["development-tools","encoding","rust-patterns","network-programming"]
@@ -12,7 +12,7 @@ This library enables the serialization and deserialization of trait objects such
 """
 repository = "https://github.com/alecmocatta/serde_traitobject"
 homepage = "https://github.com/alecmocatta/serde_traitobject"
-documentation = "https://docs.rs/serde_traitobject/0.2.3"
+documentation = "https://docs.rs/serde_traitobject/0.2.4"
 readme = "README.md"
 edition = "2018"
 
@@ -31,6 +31,7 @@ serde_derive = "1.0"
 serde_json = "1.0"
 bincode = "1.0"
 serde_closure = "0.2.2"
+wasm-bindgen-test = "0.3"
 
 [[test]]
 name = "test"

@@ -16,6 +16,7 @@ use serde_closure::Fn;
 use serde_derive::{Deserialize, Serialize};
 use serde_traitobject::{Deserialize, Serialize};
 use std::{any, env, process, rc};
+use wasm_bindgen_test::wasm_bindgen_test;
 
 #[derive(Serialize, Deserialize)]
 struct Abc {
@@ -87,6 +88,7 @@ impl<'a> AsRef<dyn Hello2Serialize + 'a> for dyn Hello2Serialize {
 	}
 }
 
+#[wasm_bindgen_test]
 #[allow(clippy::too_many_lines)]
 fn main() {
 	let test = |Abc {
@@ -222,6 +224,10 @@ fn main() {
 		n: Into::<Box<[u16]>>::into(vec![1u16, 2, 3]).into(),
 		o: vec![1u16, 2, 3].into(),
 	};
+
+	if cfg!(target_arch = "wasm32") {
+		return;
+	}
 
 	if let Ok(x) = env::var("SERDE_TRAITOBJECT_SPAWNED") {
 		let (a, bc): (_, Vec<u8>) = serde_json::from_str(&x).unwrap();

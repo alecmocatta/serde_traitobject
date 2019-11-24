@@ -11,11 +11,14 @@
 //! ```
 //! # use serde_derive::{Serialize, Deserialize};
 //! trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
-//! 	fn my_method(&self);
+//!     fn my_method(&self);
 //! }
 //!
 //! #[derive(Serialize, Deserialize)]
-//! struct Message(#[serde(with = "serde_traitobject")] Box<dyn MyTrait>);
+//! struct Message {
+//!     #[serde(with = "serde_traitobject")]
+//!     message: Box<dyn MyTrait>,
+//! }
 //!
 //! // Woohoo, `Message` is now serializable!
 //! ```
@@ -39,13 +42,13 @@
 //!
 //! #[derive(Serialize, Deserialize, Debug)]
 //! struct MyStruct {
-//! 	foo: String,
-//! 	bar: usize,
+//!     foo: String,
+//!     bar: usize,
 //! }
 //!
 //! let my_struct = MyStruct {
-//! 	foo: String::from("abc"),
-//! 	bar: 123,
+//!     foo: String::from("abc"),
+//!     bar: 123,
 //! };
 //!
 //! let erased: s::Box<dyn s::Any> = s::Box::new(my_struct);
@@ -65,6 +68,8 @@
 //! This crate works by wrapping the vtable pointer with [`relative::Vtable`](https://docs.rs/relative) such that it can safely be sent between processes.
 //!
 //! This approach is not yet secure against malicious actors. However, if we assume non-malicious actors and typical (static or dynamic) linking conditions, then it's not unreasonable to consider it sound.
+//!
+//! See [here](https://github.com/rust-lang/rust/pull/66113) for ongoing work in `rustc` to make this safe and secure.
 //!
 //! ## Validation
 //!
@@ -94,7 +99,7 @@
 //!
 //! This crate currently requires Rust nightly.
 
-#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.2.3")]
+#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.2.4")]
 #![feature(
 	arbitrary_self_types,
 	coerce_unsized,
