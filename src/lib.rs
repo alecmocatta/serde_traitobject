@@ -66,6 +66,8 @@
 //!
 //! This approach is not yet secure against malicious actors. However, if we assume non-malicious actors and typical (static or dynamic) linking conditions, then it's not unreasonable to consider it sound.
 //!
+//! See [here](https://github.com/rust-lang/rust/pull/66113) for ongoing work in `rustc` to make this safe and secure.
+//!
 //! ## Validation
 //!
 //! Three things are serialized alongside the vtable pointer for the purpose of validation:
@@ -94,7 +96,7 @@
 //!
 //! This crate currently requires Rust nightly.
 
-#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.2.3")]
+#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.2.4")]
 #![feature(
 	arbitrary_self_types,
 	coerce_unsized,
