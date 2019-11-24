@@ -52,6 +52,24 @@ impl Box<dyn Any + Send + Sync> {
 		}
 	}
 }
+impl dyn Any + Send {
+	/// Convert into a `std::boxed::Box<dyn std::any::Any + Send>`.
+	pub fn into_any_send(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any + Send> {
+		<Box<dyn Any + Send>>::into_any_send(Box(self))
+	}
+}
+impl dyn Any + Sync {
+	/// Convert into a `std::boxed::Box<dyn std::any::Any + Sync>`.
+	pub fn into_any_sync(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any + Sync> {
+		<Box<dyn Any + Sync>>::into_any_sync(Box(self))
+	}
+}
+impl dyn Any + Send + Sync {
+	/// Convert into a `std::boxed::Box<dyn std::any::Any + Send + Sync>`.
+	pub fn into_any_send_sync(self: boxed::Box<Self>) -> boxed::Box<dyn any::Any + Send + Sync> {
+		<Box<dyn Any + Send + Sync>>::into_any_send_sync(Box(self))
+	}
+}
 impl<T: ?Sized + marker::Unsize<U>, U: ?Sized> ops::CoerceUnsized<Box<U>> for Box<T> {}
 impl<T: ?Sized> Deref for Box<T> {
 	type Target = boxed::Box<T>;
