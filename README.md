@@ -16,11 +16,14 @@ Any trait can be made (de)serializable when made into a trait object by adding t
 
 ```rust
 trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
-	fn my_method(&self);
+    fn my_method(&self);
 }
 
 #[derive(Serialize, Deserialize)]
-struct Message(#[serde(with = "serde_traitobject")] Box<dyn MyTrait>);
+struct Message {
+    #[serde(with = "serde_traitobject")]
+    message: Box<dyn MyTrait>,
+}
 
 // Woohoo, `Message` is now serializable!
 ```
@@ -43,13 +46,13 @@ use serde_traitobject as s;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct MyStruct {
-	foo: String,
-	bar: usize,
+    foo: String,
+    bar: usize,
 }
 
 let my_struct = MyStruct {
-	foo: String::from("abc"),
-	bar: 123,
+    foo: String::from("abc"),
+    bar: 123,
 };
 
 let erased: s::Box<dyn s::Any> = s::Box::new(my_struct);
