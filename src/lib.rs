@@ -120,6 +120,9 @@
 	clippy::pedantic
 )] // from https://github.com/rust-unofficial/patterns/blob/master/anti_patterns/deny-warnings.md
 #![allow(clippy::must_use_candidate, clippy::missing_errors_doc)]
+// At some point this, and the HRTB Fn* impls, will be invalid
+// See https://github.com/rust-lang/rust/issues/56105
+#![allow(coherence_leak_check)]
 
 mod convenience;
 
