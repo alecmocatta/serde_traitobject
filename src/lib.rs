@@ -119,14 +119,14 @@
 	unused_results,
 	clippy::pedantic
 )] // from https://github.com/rust-unofficial/patterns/blob/master/anti_patterns/deny-warnings.md
-#![allow(clippy::must_use_candidate)]
+#![allow(clippy::must_use_candidate, clippy::missing_errors_doc)]
 
 mod convenience;
 
-use metatype::{type_coerce, type_id};
+use metatype::type_coerce;
 use relative::Vtable;
 use serde::ser::SerializeTuple;
-use std::{any::type_name, boxed, fmt, marker, ptr::NonNull};
+use std::{any::type_name, boxed, fmt, marker};
 
 pub use convenience::*;
 
@@ -139,7 +139,7 @@ pub use convenience::*;
 /// use serde_derive::{Serialize, Deserialize};
 ///
 /// trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
-/// 	fn my_method(&self);
+///     fn my_method(&self);
 /// }
 /// ```
 ///
@@ -148,7 +148,7 @@ pub use convenience::*;
 /// # use serde_derive::{Serialize, Deserialize};
 /// #
 /// # trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
-/// # 	fn my_method(&self);
+/// #     fn my_method(&self);
 /// # }
 /// #[derive(Serialize, Deserialize)]
 /// struct Message(#[serde(with = "serde_traitobject")] Box<dyn MyTrait>);
@@ -160,19 +160,19 @@ pub use convenience::*;
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
 /// # trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
-/// # 	fn my_method(&self);
+/// #     fn my_method(&self);
 /// # }
 /// # #[derive(Serialize, Deserialize)]
 /// # struct Message(#[serde(with = "serde_traitobject")] Box<dyn MyTrait>);
 /// #[derive(Serialize, Deserialize)]
 /// struct MyStruct {
-/// 	foo: String,
+///     foo: String,
 /// }
 ///
 /// impl MyTrait for MyStruct {
-/// 	fn my_method(&self) {
-/// 		println!("foo: {}", self.foo);
-/// 	}
+///     fn my_method(&self) {
+///         println!("foo: {}", self.foo);
+///     }
 /// }
 /// ```
 pub trait Serialize: serialize::Sealed {}
@@ -187,7 +187,7 @@ impl<T: serde::ser::Serialize + ?Sized> Serialize for T {}
 /// use serde_derive::{Serialize, Deserialize};
 ///
 /// trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
-/// 	fn my_method(&self);
+///     fn my_method(&self);
 /// }
 /// ```
 ///
@@ -196,7 +196,7 @@ impl<T: serde::ser::Serialize + ?Sized> Serialize for T {}
 /// # use serde_derive::{Serialize, Deserialize};
 /// #
 /// # trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
-/// # 	fn my_method(&self);
+/// #     fn my_method(&self);
 /// # }
 /// #[derive(Serialize, Deserialize)]
 /// struct Message(#[serde(with = "serde_traitobject")] Box<dyn MyTrait>);
@@ -208,19 +208,19 @@ impl<T: serde::ser::Serialize + ?Sized> Serialize for T {}
 /// ```
 /// # use serde_derive::{Serialize, Deserialize};
 /// # trait MyTrait: serde_traitobject::Serialize + serde_traitobject::Deserialize {
-/// # 	fn my_method(&self);
+/// #     fn my_method(&self);
 /// # }
 /// # #[derive(Serialize, Deserialize)]
 /// # struct Message(#[serde(with = "serde_traitobject")] Box<dyn MyTrait>);
 /// #[derive(Serialize, Deserialize)]
 /// struct MyStruct {
-/// 	foo: String,
+///     foo: String,
 /// }
 ///
 /// impl MyTrait for MyStruct {
-/// 	fn my_method(&self) {
-/// 		println!("foo: {}", self.foo);
-/// 	}
+///     fn my_method(&self) {
+///         println!("foo: {}", self.foo);
+///     }
 /// }
 /// ```
 pub trait Deserialize: deserialize::Sealed {}
@@ -229,7 +229,7 @@ impl Deserialize for str {}
 impl<T: serde::de::DeserializeOwned> Deserialize for [T] {}
 
 mod serialize {
-	use super::*;
+	use metatype::type_id;
 
 	pub trait Sealed: erased_serde::Serialize {
 		fn serialize_sized<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -271,7 +271,8 @@ mod serialize {
 }
 
 mod deserialize {
-	use super::*;
+	use metatype::type_id;
+	use std::ptr::NonNull;
 
 	pub trait Sealed {
 		fn deserialize_erased(
@@ -281,7 +282,7 @@ mod deserialize {
 			unreachable!()
 		}
 
-		fn deserialize_box<'de, D>(deserializer: D) -> Result<boxed::Box<Self>, D::Error>
+		fn deserialize_box<'de, D>(deserializer: D) -> Result<Box<Self>, D::Error>
 		where
 			D: serde::Deserializer<'de>,
 			Self: Sized,
@@ -305,16 +306,16 @@ mod deserialize {
 			self: *const Self, deserializer: &mut dyn erased_serde::Deserializer,
 		) -> Result<NonNull<()>, erased_serde::Error> {
 			erased_serde::deserialize::<Self>(deserializer)
-				.map(|x| NonNull::new(boxed::Box::into_raw(boxed::Box::new(x)).cast()).unwrap())
+				.map(|x| NonNull::new(Box::into_raw(Box::new(x)).cast()).unwrap())
 		}
 
 		#[inline]
-		fn deserialize_box<'de, D>(deserializer: D) -> Result<boxed::Box<Self>, D::Error>
+		fn deserialize_box<'de, D>(deserializer: D) -> Result<Box<Self>, D::Error>
 		where
 			D: serde::Deserializer<'de>,
 			Self: Sized,
 		{
-			serde::de::Deserialize::deserialize(deserializer).map(boxed::Box::new)
+			serde::de::Deserialize::deserialize(deserializer).map(Box::new)
 		}
 	}
 
@@ -328,13 +329,13 @@ mod deserialize {
 	#[inline]
 	pub fn deserialize_erased<T: ?Sized>(
 		self_: *const T, deserializer: &mut dyn erased_serde::Deserializer,
-	) -> Result<boxed::Box<T>, erased_serde::Error>
+	) -> Result<Box<T>, erased_serde::Error>
 	where
 		T: Sealed,
 	{
 		self_.deserialize_erased(deserializer).map(|raw| {
 			let object: *mut T = metatype::Type::fatten(raw.as_ptr(), metatype::Type::meta(self_));
-			unsafe { boxed::Box::from_raw(object) }
+			unsafe { Box::from_raw(object) }
 		})
 	}
 }
@@ -505,8 +506,8 @@ impl<'de, T: Deserialize + ?Sized> serde::de::DeserializeSeed<'de> for Deseriali
 ///
 /// #[derive(Serialize, Deserialize)]
 /// struct MyStruct {
-/// 	#[serde(with = "serde_traitobject")]
-/// 	field: Box<dyn serde_traitobject::Any>,
+///     #[serde(with = "serde_traitobject")]
+///     field: Box<dyn serde_traitobject::Any>,
 /// }
 /// ```
 ///
@@ -516,8 +517,8 @@ impl<'de, T: Deserialize + ?Sized> serde::de::DeserializeSeed<'de> for Deseriali
 ///
 /// #[derive(Serialize)]
 /// struct MyStruct {
-/// 	#[serde(serialize_with = "serde_traitobject::serialize")]
-/// 	field: Box<dyn serde_traitobject::Any>,
+///     #[serde(serialize_with = "serde_traitobject::serialize")]
+///     field: Box<dyn serde_traitobject::Any>,
 /// }
 /// ```
 pub fn serialize<T: Serialize + ?Sized + 'static, B: AsRef<T> + ?Sized, S>(
@@ -537,8 +538,8 @@ where
 ///
 /// #[derive(Serialize, Deserialize)]
 /// struct MyStruct {
-/// 	#[serde(with = "serde_traitobject")]
-/// 	field: Box<dyn serde_traitobject::Any>,
+///     #[serde(with = "serde_traitobject")]
+///     field: Box<dyn serde_traitobject::Any>,
 /// }
 /// ```
 ///
@@ -548,8 +549,8 @@ where
 ///
 /// #[derive(Deserialize)]
 /// struct MyStruct {
-/// 	#[serde(deserialize_with = "serde_traitobject::deserialize")]
-/// 	field: Box<dyn serde_traitobject::Any>,
+///     #[serde(deserialize_with = "serde_traitobject::deserialize")]
+///     field: Box<dyn serde_traitobject::Any>,
 /// }
 /// ```
 pub fn deserialize<'de, T: Deserialize + ?Sized + 'static, B, D>(
