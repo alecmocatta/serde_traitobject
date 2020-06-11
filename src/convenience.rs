@@ -1,8 +1,8 @@
-use super::{deserialize, serialize, Deserialize, Serialize};
-use serde;
 use std::{
 	any, borrow::{Borrow, BorrowMut}, boxed, error, fmt, marker, ops::{self, Deref, DerefMut}, rc, sync
 };
+
+use super::{deserialize, serialize, Deserialize, Serialize};
 
 /// Convenience wrapper around [std::boxed::Box<T>](std::boxed::Box) that automatically uses `serde_traitobject` for (de)serialization.
 #[derive(Clone, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -128,6 +128,7 @@ impl<T> From<T> for Box<T> {
 	}
 }
 impl<T: error::Error> error::Error for Box<T> {
+	#[allow(deprecated)]
 	fn description(&self) -> &str {
 		error::Error::description(&**self)
 	}
@@ -472,14 +473,14 @@ impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Any + Send + 'static> {
 /// #[derive(Serialize,Deserialize,Debug)]
 /// struct MyError(String);
 /// impl fmt::Display for MyError {
-/// 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-/// 		write!(f, "{}", self.0)
-/// 	}
+///     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+///         write!(f, "{}", self.0)
+///     }
 /// }
 /// impl std::error::Error for MyError {}
 ///
 /// fn fallible() -> Result<(),s::Box<dyn s::Error>> {
-/// 	Err(Box::new(MyError(String::from("boxed error"))) as Box<dyn s::Error>)?
+///     Err(Box::new(MyError(String::from("boxed error"))) as Box<dyn s::Error>)?
 /// }
 ///
 /// let serialized = serde_json::to_string(&fallible()).unwrap();
@@ -561,7 +562,7 @@ impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Error + Send + 'static>
 /// extern crate serde_traitobject as s;
 ///
 /// fn message() -> s::Box<dyn s::Display> {
-/// 	s::Box::new(String::from("boxed displayable"))
+///     s::Box::new(String::from("boxed displayable"))
 /// }
 ///
 /// let serialized = serde_json::to_string(&message()).unwrap();
@@ -630,7 +631,7 @@ impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Display + Send + 'stati
 /// extern crate serde_traitobject as s;
 ///
 /// fn debug() -> s::Box<dyn s::Debug> {
-/// 	s::Box::new(String::from("boxed debuggable"))
+///     s::Box::new(String::from("boxed debuggable"))
 /// }
 ///
 /// let serialized = serde_json::to_string(&debug()).unwrap();
@@ -703,6 +704,16 @@ impl<'a, Args, Output> AsRef<Self> for dyn FnOnce<Args, Output = Output> + Send 
 		self
 	}
 }
+impl<'a, A, Output> AsRef<Self> for dyn for<'r> FnOnce<(&'r A,), Output = Output> + 'a {
+	fn as_ref(&self) -> &Self {
+		self
+	}
+}
+impl<'a, A, Output> AsRef<Self> for dyn for<'r> FnOnce<(&'r A,), Output = Output> + Send + 'a {
+	fn as_ref(&self) -> &Self {
+		self
+	}
+}
 
 impl<Args: 'static, Output: 'static> serde::ser::Serialize for dyn FnOnce<Args, Output = Output> {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -741,6 +752,50 @@ impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
 	{
 		<Box<dyn FnOnce<Args, Output = Output> + Send + 'static>>::deserialize(deserializer)
 			.map(|x| x.0)
+	}
+}
+impl<A: 'static, Output: 'static> serde::ser::Serialize
+	for dyn for<'r> FnOnce<(&'r A,), Output = Output>
+{
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(self, serializer)
+	}
+}
+impl<'de, A: 'static, Output: 'static> serde::de::Deserialize<'de>
+	for boxed::Box<dyn for<'r> FnOnce<(&'r A,), Output = Output> + 'static>
+{
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn for<'r> FnOnce<(&'r A,), Output = Output> + 'static>>::deserialize(deserializer)
+			.map(|x| x.0)
+	}
+}
+impl<A: 'static, Output: 'static> serde::ser::Serialize
+	for dyn for<'r> FnOnce<(&'r A,), Output = Output> + Send
+{
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: serde::Serializer,
+	{
+		serialize(self, serializer)
+	}
+}
+impl<'de, A: 'static, Output: 'static> serde::de::Deserialize<'de>
+	for boxed::Box<dyn for<'r> FnOnce<(&'r A,), Output = Output> + Send + 'static>
+{
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		<Box<dyn for<'r> FnOnce<(&'r A,), Output = Output> + Send + 'static>>::deserialize(
+			deserializer,
+		)
+		.map(|x| x.0)
 	}
 }
 
