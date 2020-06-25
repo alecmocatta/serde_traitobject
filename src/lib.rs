@@ -99,7 +99,7 @@
 //!
 //! This crate currently requires Rust nightly.
 
-#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.2.5")]
+#![doc(html_root_url = "https://docs.rs/serde_traitobject/0.2.6")]
 #![feature(
 	arbitrary_self_types,
 	coerce_unsized,
@@ -119,10 +119,11 @@
 	unused_results,
 	clippy::pedantic
 )] // from https://github.com/rust-unofficial/patterns/blob/master/anti_patterns/deny-warnings.md
-#![allow(clippy::must_use_candidate, clippy::missing_errors_doc)]
-// At some point this, and the HRTB Fn* impls, will be invalid
-// See https://github.com/rust-lang/rust/issues/56105
-#![allow(coherence_leak_check)]
+#![allow(
+	clippy::must_use_candidate,
+	clippy::missing_errors_doc,
+	incomplete_features
+)]
 
 mod convenience;
 
