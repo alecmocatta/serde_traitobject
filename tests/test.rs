@@ -10,43 +10,44 @@
 	unused_results,
 	clippy::pedantic
 )] // from https://github.com/rust-unofficial/patterns/blob/master/anti_patterns/deny-warnings.md
-#![allow(clippy::unseparated_literal_suffix)]
+#![allow(clippy::unseparated_literal_suffix, dead_code)]
 
 use serde_closure::Fn;
 use serde_derive::{Deserialize, Serialize};
+use serde_traitobject as st;
 use serde_traitobject::{Deserialize, Serialize};
 use std::{any, env, process, rc};
 use wasm_bindgen_test::wasm_bindgen_test;
 
 #[derive(Serialize, Deserialize)]
 struct Abc {
-	#[serde(with = "serde_traitobject")]
+	#[serde(with = "st")]
 	a: rc::Rc<dyn HelloSerialize>,
-	b: serde_traitobject::Rc<dyn HelloSerialize>,
-	#[serde(with = "serde_traitobject")]
+	b: st::Rc<dyn HelloSerialize>,
+	#[serde(with = "st")]
 	c: Box<dyn HelloSerialize>,
-	d: serde_traitobject::Box<dyn HelloSerialize>,
-	#[serde(with = "serde_traitobject")]
-	e: Box<dyn serde_traitobject::Any>,
-	f: serde_traitobject::Box<dyn serde_traitobject::Any>,
-	g: serde_traitobject::Box<dyn serde_traitobject::Fn(usize) -> String>,
-	h: serde_traitobject::Box<dyn serde_traitobject::Any>,
-	i: serde_traitobject::Box<dyn serde_traitobject::Any>,
-	j: serde_traitobject::Box<String>,
-	#[serde(with = "serde_traitobject")]
+	d: st::Box<dyn HelloSerialize>,
+	#[serde(with = "st")]
+	e: Box<dyn st::Any>,
+	f: st::Box<dyn st::Any>,
+	g: st::Box<dyn st::Fn(usize) -> String>,
+	h: st::Box<dyn st::Any>,
+	i: st::Box<dyn st::Any>,
+	j: st::Box<String>,
+	#[serde(with = "st")]
 	k: Box<String>,
-	l: serde_traitobject::Box<str>,
-	#[serde(with = "serde_traitobject")]
+	l: st::Box<str>,
+	#[serde(with = "st")]
 	m: Box<str>,
-	n: serde_traitobject::Box<[u16]>,
-	#[serde(with = "serde_traitobject")]
+	n: st::Box<[u16]>,
+	#[serde(with = "st")]
 	o: Box<[u16]>,
 }
 
 #[derive(Serialize)]
 struct Def<'a> {
-	a: &'a (dyn serde_traitobject::FnOnce<(), Output = ()> + 'static),
-	c: &'a mut (dyn serde_traitobject::FnOnce<(), Output = ()> + 'static),
+	a: &'a (dyn st::FnOnce<(), Output = ()> + 'static),
+	c: &'a mut (dyn st::FnOnce<(), Output = ()> + 'static),
 }
 
 trait Hello {
@@ -76,7 +77,7 @@ impl Hello for u8 {
 
 #[derive(Serialize)]
 struct Ghi<'a> {
-	#[serde(with = "serde_traitobject")]
+	#[serde(with = "st")]
 	e: &'a (dyn Hello2Serialize + 'static),
 }
 trait Hello2 {}
@@ -86,6 +87,17 @@ impl<'a> AsRef<dyn Hello2Serialize + 'a> for dyn Hello2Serialize {
 	fn as_ref(&self) -> &(dyn Hello2Serialize + 'a) {
 		self
 	}
+}
+
+type Request = st::Box<dyn for<'a> st::FnOnce<(&'a String,), Output = ()> + Send>;
+
+fn _assert() {
+	fn assert_serializable<T>()
+	where
+		T: serde::Serialize + for<'de> serde::Deserialize<'de>,
+	{
+	}
+	assert_serializable::<Request>();
 }
 
 #[wasm_bindgen_test]
@@ -122,17 +134,14 @@ fn main() {
 		);
 		assert_eq!(g(22), "hey 123!");
 		assert_eq!(
-			***Box::<dyn any::Any>::downcast::<serde_traitobject::Box<usize>>(h.into_any())
-				.unwrap(),
+			***Box::<dyn any::Any>::downcast::<st::Box<usize>>(h.into_any()).unwrap(),
 			987_654_321
 		);
 		assert_eq!(
 			*Box::<dyn any::Any>::downcast::<usize>(
-				Box::<dyn any::Any>::downcast::<serde_traitobject::Box<dyn serde_traitobject::Any>>(
-					i.into_any()
-				)
-				.unwrap()
-				.into_any()
+				Box::<dyn any::Any>::downcast::<st::Box<dyn st::Any>>(i.into_any())
+					.unwrap()
+					.into_any()
 			)
 			.unwrap(),
 			987_654_321
@@ -151,28 +160,24 @@ fn main() {
 		let a: Box<dyn any::Any> = *a;
 		let _: Box<usize> = Box::<dyn any::Any>::downcast(a).unwrap();
 
-		let a: serde_traitobject::Box<dyn serde_traitobject::Any> =
-			serde_traitobject::Box::new(serde_traitobject::Box::new(1usize)
-				as serde_traitobject::Box<dyn serde_traitobject::Any>);
+		let a: st::Box<dyn st::Any> = st::Box::new(st::Box::new(1usize) as st::Box<dyn st::Any>);
 		let a: Box<dyn any::Any> = a.into_any();
-		let a: Box<serde_traitobject::Box<dyn serde_traitobject::Any>> =
-			Box::<dyn any::Any>::downcast(a).unwrap();
-		let a: serde_traitobject::Box<dyn serde_traitobject::Any> = *a;
+		let a: Box<st::Box<dyn st::Any>> = Box::<dyn any::Any>::downcast(a).unwrap();
+		let a: st::Box<dyn st::Any> = *a;
 		let a: Box<dyn any::Any> = a.into_any();
 		let _: Box<usize> = Box::<dyn any::Any>::downcast(a).unwrap();
 
 		let original = Abc {
 			a: rc::Rc::new(123u16),
-			b: serde_traitobject::Rc::new(456u16),
+			b: st::Rc::new(456u16),
 			c: Box::new(789u32),
-			d: serde_traitobject::Box::new(101u8),
+			d: st::Box::new(101u8),
 			e: Box::new(78u8),
-			f: serde_traitobject::Box::new(78u8),
-			g: serde_traitobject::Box::new(Fn!(|a: usize| format!("hey {}!", a + 101))),
-			h: serde_traitobject::Box::new(serde_traitobject::Box::new(987_654_321usize)),
-			i: serde_traitobject::Box::new(serde_traitobject::Box::new(987_654_321usize)
-				as serde_traitobject::Box<dyn serde_traitobject::Any>),
-			j: serde_traitobject::Box::new(String::from("abc")),
+			f: st::Box::new(78u8),
+			g: st::Box::new(Fn!(|a: usize| format!("hey {}!", a + 101))),
+			h: st::Box::new(st::Box::new(987_654_321usize)),
+			i: st::Box::new(st::Box::new(987_654_321usize) as st::Box<dyn st::Any>),
+			j: st::Box::new(String::from("abc")),
 			k: Box::new(String::from("def")),
 			l: Into::<Box<str>>::into(String::from("ghi")).into(),
 			m: String::from("jkl").into(),
@@ -185,39 +190,27 @@ fn main() {
 		let a2 = bincode::deserialize(&a2).unwrap();
 		test(a1);
 		test(a2);
-		let a1 = serde_json::to_string(
-			&(serde_traitobject::Box::new(78u8)
-				as serde_traitobject::Box<dyn serde_traitobject::Debug>),
-		)
-		.unwrap();
-		let a1r: Result<serde_traitobject::Box<dyn serde_traitobject::Debug>, _> =
-			serde_json::from_str(&a1);
+		let a1 = serde_json::to_string(&(st::Box::new(78u8) as st::Box<dyn st::Debug>)).unwrap();
+		let a1r: Result<st::Box<dyn st::Debug>, _> = serde_json::from_str(&a1);
 		assert!(a1r.is_ok());
-		let a1r: Result<serde_traitobject::Box<dyn serde_traitobject::Any>, _> =
-			serde_json::from_str(&a1);
+		let a1r: Result<st::Box<dyn st::Any>, _> = serde_json::from_str(&a1);
 		assert!(a1r.is_err());
-		let a1 = bincode::serialize(
-			&(serde_traitobject::Box::new(78u8)
-				as serde_traitobject::Box<dyn serde_traitobject::Debug>),
-		)
-		.unwrap();
-		let a1: Result<serde_traitobject::Box<dyn serde_traitobject::Any>, _> =
-			bincode::deserialize(&a1);
+		let a1 = bincode::serialize(&(st::Box::new(78u8) as st::Box<dyn st::Debug>)).unwrap();
+		let a1: Result<st::Box<dyn st::Any>, _> = bincode::deserialize(&a1);
 		assert!(a1.is_err());
 	}
 
 	let original = Abc {
 		a: rc::Rc::new(123u16),
-		b: serde_traitobject::Rc::new(456u16),
+		b: st::Rc::new(456u16),
 		c: Box::new(789u32),
-		d: serde_traitobject::Box::new(101u8),
+		d: st::Box::new(101u8),
 		e: Box::new(78u8),
-		f: serde_traitobject::Box::new(78u8),
-		g: serde_traitobject::Box::new(Fn!(|a: usize| format!("hey {}!", a + 101))),
-		h: serde_traitobject::Box::new(serde_traitobject::Box::new(987_654_321usize)),
-		i: serde_traitobject::Box::new(serde_traitobject::Box::new(987_654_321usize)
-			as serde_traitobject::Box<dyn serde_traitobject::Any>),
-		j: serde_traitobject::Box::new(String::from("abc")),
+		f: st::Box::new(78u8),
+		g: st::Box::new(Fn!(|a: usize| format!("hey {}!", a + 101))),
+		h: st::Box::new(st::Box::new(987_654_321usize)),
+		i: st::Box::new(st::Box::new(987_654_321usize) as st::Box<dyn st::Any>),
+		j: st::Box::new(String::from("abc")),
 		k: Box::new(String::from("def")),
 		l: Into::<Box<str>>::into(String::from("ghi")).into(),
 		m: String::from("jkl").into(),

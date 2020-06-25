@@ -704,16 +704,6 @@ impl<'a, Args, Output> AsRef<Self> for dyn FnOnce<Args, Output = Output> + Send 
 		self
 	}
 }
-impl<'a, A, Output> AsRef<Self> for dyn for<'r> FnOnce<(&'r A,), Output = Output> + 'a {
-	fn as_ref(&self) -> &Self {
-		self
-	}
-}
-impl<'a, A, Output> AsRef<Self> for dyn for<'r> FnOnce<(&'r A,), Output = Output> + Send + 'a {
-	fn as_ref(&self) -> &Self {
-		self
-	}
-}
 
 impl<Args: 'static, Output: 'static> serde::ser::Serialize for dyn FnOnce<Args, Output = Output> {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -752,50 +742,6 @@ impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
 	{
 		<Box<dyn FnOnce<Args, Output = Output> + Send + 'static>>::deserialize(deserializer)
 			.map(|x| x.0)
-	}
-}
-impl<A: 'static, Output: 'static> serde::ser::Serialize
-	for dyn for<'r> FnOnce<(&'r A,), Output = Output>
-{
-	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-	where
-		S: serde::Serializer,
-	{
-		serialize(self, serializer)
-	}
-}
-impl<'de, A: 'static, Output: 'static> serde::de::Deserialize<'de>
-	for boxed::Box<dyn for<'r> FnOnce<(&'r A,), Output = Output> + 'static>
-{
-	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-	where
-		D: serde::Deserializer<'de>,
-	{
-		<Box<dyn for<'r> FnOnce<(&'r A,), Output = Output> + 'static>>::deserialize(deserializer)
-			.map(|x| x.0)
-	}
-}
-impl<A: 'static, Output: 'static> serde::ser::Serialize
-	for dyn for<'r> FnOnce<(&'r A,), Output = Output> + Send
-{
-	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-	where
-		S: serde::Serializer,
-	{
-		serialize(self, serializer)
-	}
-}
-impl<'de, A: 'static, Output: 'static> serde::de::Deserialize<'de>
-	for boxed::Box<dyn for<'r> FnOnce<(&'r A,), Output = Output> + Send + 'static>
-{
-	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-	where
-		D: serde::Deserializer<'de>,
-	{
-		<Box<dyn for<'r> FnOnce<(&'r A,), Output = Output> + Send + 'static>>::deserialize(
-			deserializer,
-		)
-		.map(|x| x.0)
 	}
 }
 
