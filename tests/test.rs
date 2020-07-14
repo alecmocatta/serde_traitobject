@@ -56,19 +56,16 @@ trait Hello {
 trait HelloSerialize: Hello + Serialize + Deserialize {}
 impl<T> HelloSerialize for T where T: Hello + Serialize + Deserialize {}
 
-#[allow(clippy::use_self)]
 impl Hello for u32 {
 	fn hi(&self) -> String {
 		format!("hi u32! {:?}", self)
 	}
 }
-#[allow(clippy::use_self)]
 impl Hello for u16 {
 	fn hi(&self) -> String {
 		format!("hi u16! {:?}", self)
 	}
 }
-#[allow(clippy::use_self)]
 impl Hello for u8 {
 	fn hi(&self) -> String {
 		format!("hi u8! {:?}", self)
