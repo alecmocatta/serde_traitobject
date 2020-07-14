@@ -14,8 +14,8 @@ jobs:
     endpoint: alecmocatta
     default:
       rust_toolchain: nightly
-      rust_lint_toolchain: nightly-2020-06-25
-      rust_flags: ''
+      rust_lint_toolchain: nightly-2020-07-12
+      rust_flags: ';serde_closure'
       rust_features: ''
       rust_target_check: ''
       rust_target_build: ''

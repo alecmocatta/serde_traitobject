@@ -25,7 +25,6 @@ impl Box<dyn Any> {
 		self.0.into_any()
 	}
 }
-#[allow(clippy::use_self)]
 impl Box<dyn Any + Send> {
 	/// Convert into a `std::boxed::Box<dyn std::any::Any + Send>`.
 	pub fn into_any_send(self) -> boxed::Box<dyn any::Any + Send> {
@@ -34,7 +33,6 @@ impl Box<dyn Any + Send> {
 		}
 	}
 }
-#[allow(clippy::use_self)]
 impl Box<dyn Any + Sync> {
 	/// Convert into a `std::boxed::Box<dyn std::any::Any + Sync>`.
 	pub fn into_any_sync(self) -> boxed::Box<dyn any::Any + Sync> {
@@ -43,7 +41,6 @@ impl Box<dyn Any + Sync> {
 		}
 	}
 }
-#[allow(clippy::use_self)]
 impl Box<dyn Any + Send + Sync> {
 	/// Convert into a `std::boxed::Box<dyn std::any::Any + Send + Sync>`.
 	pub fn into_any_send_sync(self) -> boxed::Box<dyn any::Any + Send + Sync> {
@@ -504,13 +501,11 @@ impl<'a> AsRef<Self> for dyn Error + Send + 'a {
 	}
 }
 
-#[allow(clippy::use_self)]
 impl<'a, E: error::Error + Serialize + Deserialize + 'a> From<E> for Box<dyn Error + 'a> {
 	fn from(err: E) -> Self {
 		Box::new(err)
 	}
 }
-#[allow(clippy::use_self)]
 impl<'a, E: error::Error + Serialize + Deserialize + 'a> From<E> for boxed::Box<dyn Error + 'a> {
 	fn from(err: E) -> Self {
 		boxed::Box::new(err)
@@ -856,5 +851,186 @@ impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
 	{
 		<Box<dyn Fn<Args, Output = Output> + Send + 'static>>::deserialize(deserializer)
 			.map(|x| x.0)
+	}
+}
+
+/// Convenience traits implemented on all (de)serializable implementors of [`serde_closure::traits::*`](serde_closure::traits).
+#[cfg(feature = "serde_closure")]
+pub mod sc {
+	use super::{serialize, Box, Deserialize, Serialize};
+	use serde_closure::traits as sc;
+	use std::boxed;
+
+	/// A convenience trait implemented on all (de)serializable implementors of [`serde_closure::traits::FnOnce`].
+	///
+	/// It can be made into a trait object which is then (de)serializable.
+	pub trait FnOnce<Args>: sc::FnOnceBox<Args> + Serialize + Deserialize {}
+	impl<T: ?Sized, Args> FnOnce<Args> for T where T: sc::FnOnceBox<Args> + Serialize + Deserialize {}
+
+	impl<'a, Args, Output> AsRef<Self> for dyn FnOnce<Args, Output = Output> + 'a {
+		fn as_ref(&self) -> &Self {
+			self
+		}
+	}
+	impl<'a, Args, Output> AsRef<Self> for dyn FnOnce<Args, Output = Output> + Send + 'a {
+		fn as_ref(&self) -> &Self {
+			self
+		}
+	}
+
+	impl<Args: 'static, Output: 'static> serde::ser::Serialize for dyn FnOnce<Args, Output = Output> {
+		fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+		where
+			S: serde::Serializer,
+		{
+			serialize(self, serializer)
+		}
+	}
+	impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
+		for boxed::Box<dyn FnOnce<Args, Output = Output> + 'static>
+	{
+		fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+		where
+			D: serde::Deserializer<'de>,
+		{
+			<Box<dyn FnOnce<Args, Output = Output> + 'static>>::deserialize(deserializer)
+				.map(|x| x.0)
+		}
+	}
+	impl<Args: 'static, Output: 'static> serde::ser::Serialize
+		for dyn FnOnce<Args, Output = Output> + Send
+	{
+		fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+		where
+			S: serde::Serializer,
+		{
+			serialize(self, serializer)
+		}
+	}
+	impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
+		for boxed::Box<dyn FnOnce<Args, Output = Output> + Send + 'static>
+	{
+		fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+		where
+			D: serde::Deserializer<'de>,
+		{
+			<Box<dyn FnOnce<Args, Output = Output> + Send + 'static>>::deserialize(deserializer)
+				.map(|x| x.0)
+		}
+	}
+
+	/// A convenience trait implemented on all (de)serializable implementors of [`serde_closure::traits::FnMut`].
+	///
+	/// It can be made into a trait object which is then (de)serializable.
+	pub trait FnMut<Args>: sc::FnMut<Args> + Serialize + Deserialize {}
+	impl<T: ?Sized, Args> FnMut<Args> for T where T: sc::FnMut<Args> + Serialize + Deserialize {}
+
+	impl<'a, Args, Output> AsRef<Self> for dyn FnMut<Args, Output = Output> + 'a {
+		fn as_ref(&self) -> &Self {
+			self
+		}
+	}
+	impl<'a, Args, Output> AsRef<Self> for dyn FnMut<Args, Output = Output> + Send + 'a {
+		fn as_ref(&self) -> &Self {
+			self
+		}
+	}
+
+	impl<Args: 'static, Output: 'static> serde::ser::Serialize for dyn FnMut<Args, Output = Output> {
+		fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+		where
+			S: serde::Serializer,
+		{
+			serialize(self, serializer)
+		}
+	}
+	impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
+		for boxed::Box<dyn FnMut<Args, Output = Output> + 'static>
+	{
+		fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+		where
+			D: serde::Deserializer<'de>,
+		{
+			<Box<dyn FnMut<Args, Output = Output> + 'static>>::deserialize(deserializer)
+				.map(|x| x.0)
+		}
+	}
+	impl<Args: 'static, Output: 'static> serde::ser::Serialize
+		for dyn FnMut<Args, Output = Output> + Send
+	{
+		fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+		where
+			S: serde::Serializer,
+		{
+			serialize(self, serializer)
+		}
+	}
+	impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
+		for boxed::Box<dyn FnMut<Args, Output = Output> + Send + 'static>
+	{
+		fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+		where
+			D: serde::Deserializer<'de>,
+		{
+			<Box<dyn FnMut<Args, Output = Output> + Send + 'static>>::deserialize(deserializer)
+				.map(|x| x.0)
+		}
+	}
+
+	/// A convenience trait implemented on all (de)serializable implementors of [`serde_closure::traits::Fn`].
+	///
+	/// It can be made into a trait object which is then (de)serializable.
+	pub trait Fn<Args>: sc::Fn<Args> + Serialize + Deserialize {}
+	impl<T: ?Sized, Args> Fn<Args> for T where T: sc::Fn<Args> + Serialize + Deserialize {}
+
+	impl<'a, Args, Output> AsRef<Self> for dyn Fn<Args, Output = Output> + 'a {
+		fn as_ref(&self) -> &Self {
+			self
+		}
+	}
+	impl<'a, Args, Output> AsRef<Self> for dyn Fn<Args, Output = Output> + Send + 'a {
+		fn as_ref(&self) -> &Self {
+			self
+		}
+	}
+
+	impl<Args: 'static, Output: 'static> serde::ser::Serialize for dyn Fn<Args, Output = Output> {
+		fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+		where
+			S: serde::Serializer,
+		{
+			serialize(self, serializer)
+		}
+	}
+	impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
+		for boxed::Box<dyn Fn<Args, Output = Output> + 'static>
+	{
+		fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+		where
+			D: serde::Deserializer<'de>,
+		{
+			<Box<dyn Fn<Args, Output = Output> + 'static>>::deserialize(deserializer).map(|x| x.0)
+		}
+	}
+	impl<Args: 'static, Output: 'static> serde::ser::Serialize
+		for dyn Fn<Args, Output = Output> + Send
+	{
+		fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+		where
+			S: serde::Serializer,
+		{
+			serialize(self, serializer)
+		}
+	}
+	impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
+		for boxed::Box<dyn Fn<Args, Output = Output> + Send + 'static>
+	{
+		fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+		where
+			D: serde::Deserializer<'de>,
+		{
+			<Box<dyn Fn<Args, Output = Output> + Send + 'static>>::deserialize(deserializer)
+				.map(|x| x.0)
+		}
 	}
 }
