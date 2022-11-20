@@ -104,6 +104,7 @@
 	arbitrary_self_types,
 	coerce_unsized,
 	fn_traits,
+	tuple_trait,
 	specialization,
 	unboxed_closures,
 	unsize
