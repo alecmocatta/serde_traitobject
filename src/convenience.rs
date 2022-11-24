@@ -1,5 +1,5 @@
 use std::{
-	any, borrow::{Borrow, BorrowMut}, boxed, error, fmt, marker, ops::{self, Deref, DerefMut}, rc, sync
+	any, borrow::{Borrow, BorrowMut}, boxed, error, fmt, marker, marker::Tuple, ops::{self, Deref, DerefMut}, rc, sync
 };
 
 use super::{deserialize, serialize, Deserialize, Serialize};
@@ -91,22 +91,22 @@ impl<T: ?Sized> AsMut<boxed::Box<T>> for Box<T> {
 }
 impl<T: ?Sized> AsRef<T> for Box<T> {
 	fn as_ref(&self) -> &T {
-		&*self.0
+		&self.0
 	}
 }
 impl<T: ?Sized> AsMut<T> for Box<T> {
 	fn as_mut(&mut self) -> &mut T {
-		&mut *self.0
+		&mut self.0
 	}
 }
 impl<T: ?Sized> Borrow<T> for Box<T> {
 	fn borrow(&self) -> &T {
-		&*self.0
+		&self.0
 	}
 }
 impl<T: ?Sized> BorrowMut<T> for Box<T> {
 	fn borrow_mut(&mut self) -> &mut T {
-		&mut *self.0
+		&mut self.0
 	}
 }
 impl<T: ?Sized> From<boxed::Box<T>> for Box<T> {
@@ -147,7 +147,7 @@ impl<T: fmt::Display + ?Sized> fmt::Display for Box<T> {
 		self.0.fmt(f)
 	}
 }
-impl<A: std::marker::Tuple, F: ?Sized> ops::FnOnce<A> for Box<F>
+impl<A: Tuple, F: ?Sized> ops::FnOnce<A> for Box<F>
 where
 	F: FnOnce<A>,
 {
@@ -156,7 +156,7 @@ where
 		self.0.call_once(args)
 	}
 }
-impl<A: std::marker::Tuple, F: ?Sized> ops::FnMut<A> for Box<F>
+impl<A: Tuple, F: ?Sized> ops::FnMut<A> for Box<F>
 where
 	F: FnMut<A>,
 {
@@ -164,7 +164,7 @@ where
 		self.0.call_mut(args)
 	}
 }
-impl<A: std::marker::Tuple, F: ?Sized> ops::Fn<A> for Box<F>
+impl<A: Tuple, F: ?Sized> ops::Fn<A> for Box<F>
 where
 	F: Fn<A>,
 {
@@ -222,12 +222,12 @@ impl<T: ?Sized> AsMut<rc::Rc<T>> for Rc<T> {
 }
 impl<T: ?Sized> AsRef<T> for Rc<T> {
 	fn as_ref(&self) -> &T {
-		&*self.0
+		&self.0
 	}
 }
 impl<T: ?Sized> Borrow<T> for Rc<T> {
 	fn borrow(&self) -> &T {
-		&*self.0
+		&self.0
 	}
 }
 impl<T: ?Sized> From<rc::Rc<T>> for Rc<T> {
@@ -235,9 +235,9 @@ impl<T: ?Sized> From<rc::Rc<T>> for Rc<T> {
 		Self(t)
 	}
 }
-impl<T: ?Sized> Into<rc::Rc<T>> for Rc<T> {
-	fn into(self) -> rc::Rc<T> {
-		self.0
+impl<T: ?Sized> From<Rc<T>> for rc::Rc<T> {
+	fn from(v: Rc<T>) -> Self {
+		v.0
 	}
 }
 impl<T> From<T> for Rc<T> {
@@ -310,12 +310,12 @@ impl<T: ?Sized> AsMut<sync::Arc<T>> for Arc<T> {
 }
 impl<T: ?Sized> AsRef<T> for Arc<T> {
 	fn as_ref(&self) -> &T {
-		&*self.0
+		&self.0
 	}
 }
 impl<T: ?Sized> Borrow<T> for Arc<T> {
 	fn borrow(&self) -> &T {
-		&*self.0
+		&self.0
 	}
 }
 impl<T: ?Sized> From<sync::Arc<T>> for Arc<T> {
@@ -323,9 +323,9 @@ impl<T: ?Sized> From<sync::Arc<T>> for Arc<T> {
 		Self(t)
 	}
 }
-impl<T: ?Sized> Into<sync::Arc<T>> for Arc<T> {
-	fn into(self) -> sync::Arc<T> {
-		self.0
+impl<T: ?Sized> From<Arc<T>> for sync::Arc<T> {
+	fn from(v: Arc<T>) -> Self {
+		v.0
 	}
 }
 impl<T> From<T> for Arc<T> {
@@ -686,8 +686,8 @@ impl<'de> serde::de::Deserialize<'de> for boxed::Box<dyn Debug + Send + 'static>
 /// A convenience trait implemented on all (de)serializable implementors of [`std::ops::FnOnce`].
 ///
 /// It can be made into a trait object which is then (de)serializable.
-pub trait FnOnce<Args: std::marker::Tuple>: ops::FnOnce<Args> + Serialize + Deserialize {}
-impl<T: ?Sized, Args: std::marker::Tuple> FnOnce<Args> for T where T: ops::FnOnce<Args> + Serialize + Deserialize {}
+pub trait FnOnce<Args: Tuple>: ops::FnOnce<Args> + Serialize + Deserialize {}
+impl<T: ?Sized, Args: Tuple> FnOnce<Args> for T where T: ops::FnOnce<Args> + Serialize + Deserialize {}
 
 impl<'a, Args, Output> AsRef<Self> for dyn FnOnce<Args, Output = Output> + 'a {
 	fn as_ref(&self) -> &Self {
@@ -743,8 +743,8 @@ impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
 /// A convenience trait implemented on all (de)serializable implementors of [`std::ops::FnMut`].
 ///
 /// It can be made into a trait object which is then (de)serializable.
-pub trait FnMut<Args: std::marker::Tuple>: ops::FnMut<Args> + Serialize + Deserialize {}
-impl<T: ?Sized, Args: std::marker::Tuple> FnMut<Args> for T where T: ops::FnMut<Args> + Serialize + Deserialize {}
+pub trait FnMut<Args: Tuple>: ops::FnMut<Args> + Serialize + Deserialize {}
+impl<T: ?Sized, Args: Tuple> FnMut<Args> for T where T: ops::FnMut<Args> + Serialize + Deserialize {}
 
 impl<'a, Args, Output> AsRef<Self> for dyn FnMut<Args, Output = Output> + 'a {
 	fn as_ref(&self) -> &Self {
@@ -800,8 +800,8 @@ impl<'de, Args: 'static, Output: 'static> serde::de::Deserialize<'de>
 /// A convenience trait implemented on all (de)serializable implementors of [`std::ops::Fn`].
 ///
 /// It can be made into a trait object which is then (de)serializable.
-pub trait Fn<Args: std::marker::Tuple>: ops::Fn<Args> + Serialize + Deserialize {}
-impl<T: ?Sized, Args: std::marker::Tuple> Fn<Args> for T where T: ops::Fn<Args> + Serialize + Deserialize {}
+pub trait Fn<Args: Tuple>: ops::Fn<Args> + Serialize + Deserialize {}
+impl<T: ?Sized, Args: Tuple> Fn<Args> for T where T: ops::Fn<Args> + Serialize + Deserialize {}
 
 impl<'a, Args, Output> AsRef<Self> for dyn Fn<Args, Output = Output> + 'a {
 	fn as_ref(&self) -> &Self {

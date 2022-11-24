@@ -400,7 +400,7 @@ impl<T: Serialize + ?Sized + 'static> SerializerTrait<T> for Serializer<T> {
 		// See the [`relative`](https://github.com/alecmocatta/relative) crate
 		// for more information.
 		tup.serialize_element::<Vtable<T>>(&unsafe { Vtable::<T>::from(vtable) })?;
-		tup.serialize_element::<u64>(&<T as serialize::Sealed>::type_id(&t))?;
+		tup.serialize_element::<u64>(&<T as serialize::Sealed>::type_id(t))?;
 		tup.serialize_element::<SerializeErased<T>>(&SerializeErased(t))?;
 		tup.end()
 	}
@@ -498,7 +498,7 @@ impl<'de, T: Deserialize + ?Sized> serde::de::DeserializeSeed<'de> for Deseriali
 	where
 		D: serde::de::Deserializer<'de>,
 	{
-		let deserializer = &mut erased_serde::Deserializer::erase(deserializer);
+		let deserializer = &mut <dyn erased_serde::Deserializer>::erase(deserializer);
 		deserialize::deserialize_erased(self.0, deserializer).map_err(serde::de::Error::custom)
 	}
 }
