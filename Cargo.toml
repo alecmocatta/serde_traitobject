@@ -1,6 +1,6 @@
 [package]
 name = "serde_traitobject"
-version = "0.2.7"
+version = "0.2.8"
 license = "MIT OR Apache-2.0"
 authors = ["Alec Mocatta <alec@mocatta.net>"]
 categories = ["development-tools","encoding","rust-patterns","network-programming"]
