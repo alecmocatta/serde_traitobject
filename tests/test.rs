@@ -19,6 +19,7 @@ use serde_traitobject::{Deserialize, Serialize};
 use std::{any, env, process, rc};
 use wasm_bindgen_test::wasm_bindgen_test;
 
+#[allow(clippy::box_collection)]
 #[derive(Serialize, Deserialize)]
 struct Abc {
 	#[serde(with = "st")]
@@ -58,17 +59,17 @@ impl<T> HelloSerialize for T where T: Hello + Serialize + Deserialize {}
 
 impl Hello for u32 {
 	fn hi(&self) -> String {
-		format!("hi u32! {:?}", self)
+		format!("hi u32! {self:?}")
 	}
 }
 impl Hello for u16 {
 	fn hi(&self) -> String {
-		format!("hi u16! {:?}", self)
+		format!("hi u16! {self:?}")
 	}
 }
 impl Hello for u8 {
 	fn hi(&self) -> String {
-		format!("hi u8! {:?}", self)
+		format!("hi u8! {self:?}")
 	}
 }
 
@@ -231,7 +232,7 @@ fn main() {
 
 	let exe = env::current_exe().unwrap();
 	for i in 0..100 {
-		println!("{}", i);
+		println!("{i}");
 		let output = process::Command::new(&exe)
 			.stdin(process::Stdio::null())
 			.stdout(process::Stdio::inherit())
@@ -243,9 +244,7 @@ fn main() {
 			)
 			.output()
 			.unwrap();
-		if !output.status.success() {
-			panic!("{}: {:?}", i, output);
-		}
+		assert!(output.status.success(), "{i}: {output:?}", i = i);
 	}
 }
 

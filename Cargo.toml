@@ -1,6 +1,6 @@
 [package]
 name = "serde_traitobject"
-version = "0.2.8"
+version = "0.2.9"
 license = "MIT OR Apache-2.0"
 authors = ["Alec Mocatta <alec@mocatta.net>"]
 categories = ["development-tools","encoding","rust-patterns","network-programming"]
@@ -23,7 +23,8 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 serde = "1.0"
 erased-serde = "0.3"
-metatype = "0.2"
+metatype = "0.2.2"
+
 relative = "0.2"
 serde_closure = { version = "0.3", optional = true }
 
